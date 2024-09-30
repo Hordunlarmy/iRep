@@ -15,9 +15,11 @@ class Representative
     public function __construct($accountId, $data)
     {
         $this->accountId = $accountId;
-        $this->position = $data['position'];
-        $this->constituency = $data['constituency'];
-        $this->party = $data['party'];
+        foreach ($data as $key => $value) {
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
+            }
+        }
     }
     /**
      * Insert a new representative into the database

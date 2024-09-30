@@ -11,8 +11,11 @@ class Citizen
     public function __construct($accountId, $data)
     {
         $this->accountId = $accountId;
-        $this->occupation = $data['occupation'];
-        $this->location = $data['location'];
+        foreach ($data as $key => $value) {
+            if (property_exists($this, $key)) {
+                $this->$key = $value;
+            }
+        }
     }
     /**
      * Insert a new citizen into the database
