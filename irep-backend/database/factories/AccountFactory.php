@@ -8,6 +8,7 @@ use App\Models\Representative;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * class for creating account
@@ -21,6 +22,20 @@ class AccountFactory
         $this->db = $db ?: DB::connection()->getPdo();
     }
 
+    protected function sendVerificationEmail($accountId, $email, $name)
+    {
+        $emailService = app('emailService');
+
+        $otp = Str::random(6);
+        $this->saveVerificationToken($accountId, $otp);
+
+        $emailService = app('emailService');
+        $templateVariables = [
+            'otp' => $otp,
+        ];
+        $emailService->sendNewUserVerification($email, $name, $templateVariables);
+    }
+
     /**
      * Create an account
      *
@@ -29,13 +44,10 @@ class AccountFactory
      */
     public function createAccount($data)
     {
-        $emailService = app('emailService');
-
         try {
             $this->db->beginTransaction();
 
             log::info('Transaction started.');
-
 
             $account = new Account($this->db, $data);
             $accountId = $account->insertAccount();
@@ -53,14 +65,9 @@ class AccountFactory
             }
 
             if ($data['account_type'] !== 'social') {
-                $otp = Str::random(6);
-                $this->saveVerificationToken($accountId, $otp);
-
-                $templateVariables = [
-                    'otp' => $otp,
-                ];
-                $emailService->sendNewUserVerification($data['email'], $data['name'], $templateVariables);
+                $this->sendVerificationEmail($accountId, $data['email'], $data['name']);
             }
+
             log::info('Transaction completed.');
             $this->db->commit();
             log::info('Transaction committed.');
@@ -71,6 +78,17 @@ class AccountFactory
             throw $e;
         }
     }
+
+    public function resendActivation($email)
+    {
+        $account = Account::getAccount($this->db, $email);
+
+        if ($account->email_verified == 1) {
+            throw new HttpException(400, 'Email already verified.');
+        }
+        $this->sendVerificationEmail($account->id, $account->email, $account->name);
+    }
+
 
     /**
      * Save OTP to the verification_token table
@@ -95,7 +113,6 @@ class AccountFactory
      */
     public function activateAccount($email, $otp)
     {
-        Log::info('Email: ' . $email . ' OTP: ' . $otp);
         try {
             $query = 'SELECT vt.account_id, a.account_type FROM verification_tokens vt
                   JOIN accounts a ON vt.account_id = a.id
@@ -103,11 +120,9 @@ class AccountFactory
             $stmt = $this->db->prepare($query);
 
             // Execute the query and log the result
-            $executionResult = $stmt->execute([trim($email), trim($otp)]);
-            Log::info('Statement execution result: ' . ($executionResult ? 'Success' : 'Failure'));
+            $stmt->execute([trim($email), trim($otp)]);
 
             if ($stmt->rowCount() > 0) {
-                Log::info('OTP is valid for email: ' . $email);
                 $result = $stmt->fetch(\PDO::FETCH_ASSOC);
                 $accountId = $result['account_id'];
                 $accountType = $result['account_type'];

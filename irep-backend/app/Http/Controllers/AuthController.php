@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateAccountRequest;
 use Illuminate\Support\Facades\Log;
@@ -42,12 +41,21 @@ class AuthController extends Controller
 
     }
 
+    public function resendActivation(Request $request)
+    {
+        $email = $request->input('email');
+
+        $this->accountFactory->resendActivation($email);
+
+        return response()->json(['message' => 'Activation email sent.'], 200);
+    }
+
 
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
 
-        $user = Account::getAccountByEmail($this->db, $credentials['email']);
+        $user = Account::getAccount($this->db, $credentials['email']);
 
         if ($user) {
             if (Hash::check($credentials['password'], $user->password)) {
@@ -85,7 +93,7 @@ class AuthController extends Controller
         }
         Log::info('Social User Info:', ['socialUser' => json_encode($socialUser)]);
 
-        $user = Account::getAccountByEmail($this->db, $socialUser->getEmail());
+        $user = Account::getAccount($this->db, $socialUser->getEmail());
 
         if (!$user) {
             $userData = [
@@ -108,9 +116,15 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function me()
+    public function profile()
     {
-        return response()->json(auth()->user());
+        $currentUser = auth()->user();
+        return response()->json([
+        'id' => $currentUser->id,
+        'name' => $currentUser->name,
+        'email' => $currentUser->email,
+        'account_type' => $currentUser->account_type,
+    ]);
     }
 
     /**
@@ -132,22 +146,8 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
+        return $this->tokenResponse(auth()->refresh());
+
     }
 
-    /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
-    }
 }
