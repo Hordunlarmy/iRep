@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AccountSearchController;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\PetitionController;
 
 Route::get('/', function () {
@@ -38,3 +40,4 @@ Route::group([
     Route::get('/{id}', [PetitionController::class, 'show'])->name('show');
     Route::post('/sign/{id}', [PetitionController::class, 'sign'])->name('sign');
 });
+Route::get('/accounts/search', [AccountSearchController::class, 'search']);
