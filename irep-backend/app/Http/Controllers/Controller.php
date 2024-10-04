@@ -35,12 +35,16 @@ abstract class Controller extends BaseController
      * @param  string  $token
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function tokenResponse($token)
+    protected function tokenResponse($token, $expires_in = null)
     {
+        if (is_null($expires_in)) {
+            $expires_in = auth()->factory()->getTTL() * 60;
+        }
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => $expires_in,
         ]);
     }
 }
