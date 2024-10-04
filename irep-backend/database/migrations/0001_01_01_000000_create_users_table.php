@@ -59,6 +59,7 @@ return new class () extends Migration {
             CREATE TABLE representatives (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 position VARCHAR(255),
+                district VARCHAR(255),
                 constituency VARCHAR(255),
                 party VARCHAR(255),
                 bio TEXT,

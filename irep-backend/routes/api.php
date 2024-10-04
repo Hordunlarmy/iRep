@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AccountSearchController;
 use Illuminate\Support\Facades\Cache;
 
 Route::group([
@@ -26,3 +27,4 @@ Route::get('/redis-test', function () {
     Cache::put('test', 'Redis is working!', 10);
     return Cache::get('test');
 });
+Route::get('/accounts/search', [AccountSearchController::class, 'search']);
