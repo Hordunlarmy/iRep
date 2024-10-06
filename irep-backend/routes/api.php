@@ -39,5 +39,7 @@ Route::group([
     Route::post('/', [PetitionController::class, 'create'])->name('create');
     Route::get('/{id}', [PetitionController::class, 'show'])->name('show');
     Route::post('/sign/{id}', [PetitionController::class, 'sign'])->name('sign');
+    Route::get('/{id}/comments', [PetitionController::class, 'comments'])->name('comments');
+    Route::get('/{id}/share', [PetitionController::class, 'share'])->name('share');
 });
 Route::get('/accounts/search', [AccountSearchController::class, 'search']);

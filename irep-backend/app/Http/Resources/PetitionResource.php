@@ -28,7 +28,7 @@ class PetitionResource extends JsonResource
             'description' => $data->description ?? null,
             'creator_id' => $data->creator_id ?? null,
             'target_representative_id' => $data->target_representative_id ?? null,
-            'signatures' => $data->signature_count ?? 0,
+            'signatures' => $data->signatures ?? 0,
             'comments' => $comments,
             'created_at' => $data->created_at ?? null,
             'updated_at' => $data->updated_at ?? null,

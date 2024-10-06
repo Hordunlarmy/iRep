@@ -1,10 +1,10 @@
 <?php
 
-namespace app\models;
+namespace Database\Factories;
 
 use Illuminate\Support\Facades\DB;
 
-class Petition
+class PetitionFactory
 {
     protected $db;
     protected $title;
@@ -69,15 +69,31 @@ class Petition
 
     public function insertSignature($petitionId, $accountId, $comment = null)
     {
-        $query = "
-        INSERT INTO petition_signatures (petition_id, account_id, signed_at)
-        VALUES (?, ?, ?)";
+        try {
+            $this->db->beginTransaction();
+            $query = "
+            INSERT INTO petition_signatures (petition_id, account_id, signed_at)
+            VALUES (?, ?, ?)";
 
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$petitionId, $accountId, now()]);
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([$petitionId, $accountId, now()]);
 
-        if ($comment) {
-            $this->insertComment($petitionId, $accountId, $comment);
+            $incrementQuery = "
+            UPDATE petitions
+            SET signatures = signatures + 1
+            WHERE id = ?";
+
+            $incrementStmt = $this->db->prepare($incrementQuery);
+            $incrementStmt->execute([$petitionId]);
+
+            if ($comment) {
+                $this->insertComment($petitionId, $accountId, $comment);
+            }
+
+            $this->db->commit();
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            throw $e;
         }
     }
 
@@ -92,13 +108,39 @@ class Petition
     }
 
 
-    public function incrementSignatureCount($id)
+    public function getFilteredPetitions(array $criteria)
     {
-        $query = "
-        UPDATE petitions
-        SET signature_count = signature_count + 1
-        WHERE id = ?";
+        $query = "SELECT * FROM petitions WHERE 1=1";
+        $params = [];
+
+        $search = $criteria['search'] ?? null;
+        $filter = $criteria['filter'] ?? null;
+        $sortBy = $criteria['sort_by'] ?? 'created_at';
+        $sortOrder = $criteria['sort_order'] ?? 'desc';
+
+        if (!empty($search)) {
+            $query .= " AND (title LIKE ? OR description LIKE ?)";
+            $searchTerm = "%{$search}%";
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+
+        if (!empty($filter)) {
+            $query .= " AND status = ?";
+            $params[] = $filter;
+        }
+
+        $allowedSortColumns = ['created_at', 'signature_count', 'title'];
+        $allowedSortOrders = ['asc', 'desc'];
+
+        if (in_array($sortBy, $allowedSortColumns) && in_array($sortOrder, $allowedSortOrders)) {
+            $query .= " ORDER BY {$sortBy} {$sortOrder}";
+        }
+
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$id]);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
+
 }
