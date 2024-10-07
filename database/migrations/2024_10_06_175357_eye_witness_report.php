@@ -16,7 +16,7 @@ return new class () extends Migration {
                 description TEXT NOT NULL,
                 creator_id INT NOT NULL,
                 approvals INT DEFAULT 0,
-                category ENUM('crime', 'accident', 'other') DEFAULT 'other',
+                type ENUM('crime', 'accident', 'other') DEFAULT 'other',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (creator_id) REFERENCES accounts(id) ON DELETE CASCADE

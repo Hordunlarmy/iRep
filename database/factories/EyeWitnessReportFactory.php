@@ -125,7 +125,7 @@ class EyeWitnessReportFactory
         }
 
         if (!empty($filter)) {
-            $query .= " AND category = ?";
+            $query .= " AND type = ?";
             $params[] = $filter;
         }
 

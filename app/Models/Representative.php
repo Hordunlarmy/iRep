@@ -9,10 +9,9 @@ class Representative
 {
     protected $accountId;
     protected $position;
-    protected $district;
     protected $constituency;
     protected $party;
-    
+
 
     public function __construct($accountId, $data)
     {
@@ -32,10 +31,10 @@ class Representative
     public function insert($db)
     {
         $query = "
-        INSERT INTO representatives (account_id, position, district, constituency, party)
-        VALUES (?, ?, ?, ?, ?)";
+        INSERT INTO representatives (account_id, position, constituency, party)
+        VALUES (?, ?, ?, ?)";
         $stmt = $db->prepare($query);
-        $stmt->execute([$this->accountId, $this->position, $this->district, $this->constituency, $this->party]);
+        $stmt->execute([$this->accountId, $this->position, $this->constituency, $this->party]);
 
         return $this->accountId;
     }

@@ -2,15 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AccountSearchController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PetitionController;
 use App\Http\Controllers\EyeWitnessReportController;
 
 Route::get('/', function () {
     return response()->json([
-            'message' => 'Pong!',
-            'status' => 'success'
-        ]);
+        'message' => 'Pong!',
+        'status' => 'success'
+    ]);
 });
 
 Route::group([
@@ -23,12 +23,11 @@ Route::group([
     Route::post('resend', [AuthController::class, 'resendActivation'])->name('resend');
 
     Route::group([
-            'middleware' => ['auth:api', 'verified']
+        'middleware' => ['auth:api', 'verified']
     ], function () {
         Route::post('login', [AuthController::class, 'login'])->name('login')->withoutMiddleware('auth:api');
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-        Route::get('profile', [AuthController::class, 'profile'])->name('profile');
     });
 });
 
@@ -54,5 +53,10 @@ Route::group([
     Route::get('/{id}/share', [EyeWitnessReportController::class, 'share'])->name('share');
 });
 
-
-Route::get('/accounts/search', [AccountSearchController::class, 'search']);
+Route::group([
+    'prefix' => 'accounts'
+], function () {
+    Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
+    Route::get('/representatives', [AccountController::class, 'listRepresentatives']);
+    Route::get('/{id}', [AccountController::class, 'getAccount']);
+});
