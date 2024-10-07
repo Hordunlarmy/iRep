@@ -2,24 +2,23 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-class PetitionResource extends JsonResource
+class EyeWitnessReportResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, mixed>
      */
     public function toArray($request)
     {
         // Handle both object and array data
         $data = is_object($this->resource) ? $this->resource : (object) $this->resource;
 
-        $comments = DB::table('petition_comments')
-            ->where('petition_id', $data->id)
+        $comments = DB::table('eye_witness_reports_comments')
+            ->where('report_id', $data->id)
             ->get();
 
         return [
@@ -27,8 +26,7 @@ class PetitionResource extends JsonResource
             'title' => $data->title ?? null,
             'description' => $data->description ?? null,
             'creator_id' => $data->creator_id ?? null,
-            'target_representative_id' => $data->target_representative_id ?? null,
-            'signatures' => $data->signatures ?? 0,
+            'approvals' => $data->approvals ?? 0,
             'comments' => $comments,
             'created_at' => $data->created_at ?? null,
             'updated_at' => $data->updated_at ?? null,
