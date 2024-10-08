@@ -41,10 +41,14 @@ Route::group([
     Route::get('/{id}', [PostController::class, 'show'])->name('show');
     Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
     Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
+    Route::post('{id}/like', [PostController::class, 'like'])->name('like');
+    Route::post('{id}/repost', [PostController::class, 'repost'])->name('repost');
+    Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('bookmark');
     Route::get('/{id}/share', [PostController::class, 'share'])->name('share');
 
     Route::post('/{id}/comment', [CommentController::class, 'create'])->name('create');
     Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
+
 });
 
 Route::group([

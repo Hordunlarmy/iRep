@@ -9,6 +9,17 @@ class PostResource extends JsonResource
 {
     public function toArray($request)
     {
+        $likesCount = DB::table('likes')
+            ->where('post_id', $this->id)
+            ->count() ?? 0;
+
+        $repostsCount = DB::table('reposts')
+            ->where('post_id', $this->id)
+            ->count() ?? 0;
+
+        $bookmarksCount = DB::table('bookmarks')
+            ->where('post_id', $this->id)
+            ->count() ?? 0;
 
         return [
             'id' => $this->id,
@@ -18,6 +29,9 @@ class PostResource extends JsonResource
             'creator_id' => $this->creator_id,
             'created_at' => $this->created_at,
             'media' => json_decode($this->media, true),
+            'likes' => $likesCount,
+            'reposts' => $repostsCount,
+            'bookmarks' => $bookmarksCount,
         ];
     }
 
@@ -30,7 +44,6 @@ class PostResource extends JsonResource
         $comments = DB::table('comments')
             ->where('post_id', $responseArray['id'])
             ->get();
-
 
         if (isset($postData['approvals'])) {
             $responseArray['approvals'] = $postData['approvals'];

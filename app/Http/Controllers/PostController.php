@@ -104,6 +104,34 @@ class PostController extends Controller
         return response()->json(['message' => 'success']);
     }
 
+    public function toggleAction($actionType, $id)
+    {
+        Controller::findPost($id);
+        $accountId = Auth::id();
+
+        $result = $this->postFactory->toggleAction($actionType, $id, $accountId);
+
+        if ($result) {
+            return response()->json(['message' => $result], 200);
+        }
+        return response()->json(['message' => 'Action failed'], 400);
+    }
+
+    public function like($id)
+    {
+        return $this->toggleAction('likes', $id);
+    }
+
+    public function repost($id)
+    {
+        return $this->toggleAction('reposts', $id);
+    }
+
+    public function bookmark($id)
+    {
+        return $this->toggleAction('bookmarks', $id);
+    }
+
 
     public function share($id)
     {

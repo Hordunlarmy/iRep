@@ -264,4 +264,39 @@ class PostFactory extends CommentFactory
         }
     }
 
+    public function toggleAction($table, $postId, $accountId)
+    {
+        $status = null;
+
+        if ($this->hasUserAction($table, $postId, $accountId)) {
+            $deleteQuery = "
+				DELETE FROM {$table}
+				WHERE post_id = ? AND account_id = ?";
+            $stmt = $this->db->prepare($deleteQuery);
+            $status = 'removed';
+        } else {
+            $insertQuery = "
+				INSERT INTO {$table} (post_id, account_id)
+				VALUES (?, ?)";
+            $stmt = $this->db->prepare($insertQuery);
+            $status = 'added';
+        }
+        $stmt->execute([$postId, $accountId]);
+
+        return $status;
+
+    }
+
+    public function hasUserAction($table, $postId, $accountId)
+    {
+        $query = "
+		SELECT COUNT(*)
+		FROM {$table}
+		WHERE post_id = ? AND account_id = ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$postId, $accountId]);
+
+        return $stmt->fetchColumn() > 0;
+    }
 }
