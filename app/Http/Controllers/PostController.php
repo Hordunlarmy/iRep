@@ -39,9 +39,24 @@ class PostController extends Controller
     public function index(Request $request)
     {
         try {
-            $posts = $this->postFactory->getPosts();
 
-            return response()->json(PostResource::collection($posts)->toArray($request), 200);
+            $criteria = $request->only(['search', 'filter', 'sort_by', 'sort_order', 'page', 'page_size']);
+            $result = $this->postFactory->getPosts($criteria);
+
+            $posts = $result['data'];
+            $total = $result['total'];
+            $currentPage = $result['current_page'];
+            $lastPage = $result['last_page'];
+
+            return response()->json([
+            'data' => PostResource::collection($posts),
+            'meta' => [
+                'total' => $total,
+                'current_page' => $currentPage,
+                'last_page' => $lastPage,
+                'page_size' => $criteria['page_size'] ?? 10,
+            ],
+        ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch posts ' . $e->getMessage()], 500);
         }

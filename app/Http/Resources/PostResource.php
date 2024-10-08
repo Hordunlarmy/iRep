@@ -25,8 +25,6 @@ class PostResource extends JsonResource
     {
         $postData = json_decode($this->post_data, true);
 
-        \Log::info($postData);
-
         $responseArray = $this->toArray($request);
 
         $comments = DB::table('comments')
