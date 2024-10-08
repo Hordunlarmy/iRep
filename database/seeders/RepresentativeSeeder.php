@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class RepresentativesSeeder extends Seeder
+class RepresentativeSeeder extends Seeder
 {
     public function run()
     {
@@ -32,7 +32,6 @@ class RepresentativesSeeder extends Seeder
             $phone_number = ($phone_number === 'N/A' || empty($phone_number)) ? null : $phone_number;
 
             if (empty($name)) {
-                $this->command->info('All valid data seeded successfully.');
                 return;
             }
 

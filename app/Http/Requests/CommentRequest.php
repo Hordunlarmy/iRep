@@ -22,6 +22,7 @@ class CommentRequest extends FormRequest
     public function rules()
     {
         return [
+            'parent_id' => 'nullable|integer|exists:comments,id',
             'comment' => 'nullable|string|max:200',
         ];
     }
@@ -34,6 +35,7 @@ class CommentRequest extends FormRequest
     public function messages()
     {
         return [
+            'parent_id.integer' => 'Parent ID must be an integer.',
             'comment.max' => 'Comment must not exceed 200 characters.',
         ];
     }

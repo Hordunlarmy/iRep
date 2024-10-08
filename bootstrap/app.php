@@ -6,7 +6,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
-use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
+        $exceptions->shouldRenderJsonWhen(function (Request $request, $e) {
             return $request->is('api/*') || $request->expectsJson();
         });
 
@@ -33,11 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        // Handling other exceptions
-        $exceptions->render(function (Throwable $e, Request $request) {
+        $exceptions->render(function ($e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'An error occurred: ' . $e->getMessage(),
+                    'message' => $e->getMessage(),
                 ], 500);
             }
         });

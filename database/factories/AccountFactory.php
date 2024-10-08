@@ -26,7 +26,7 @@ class AccountFactory
     {
         $emailService = app('emailService');
 
-        $otp = Str::random(4);
+        $otp = strtoupper(Str::random(4));
         $this->saveVerificationToken($accountId, $otp);
 
         $emailService = app('emailService');
@@ -37,11 +37,11 @@ class AccountFactory
     }
 
     /**
-     * Create an account
-     *
-     * @param array $data
-     * @return int
-     */
+      * Create an account
+      *
+      * @param array $data
+      * @return int
+      */
     public function createAccount($data)
     {
         try {
@@ -138,8 +138,8 @@ class AccountFactory
     {
         try {
             $query = 'SELECT vt.account_id, a.account_type FROM verification_tokens vt
-                  JOIN accounts a ON vt.account_id = a.id
-                  WHERE a.email = ? AND vt.token = ?';
+			JOIN accounts a ON vt.account_id = a.id
+			WHERE a.email = ? AND vt.token = ?';
             $stmt = $this->db->prepare($query);
 
             // Execute the query and log the result

@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PetitionController;
 use App\Http\Controllers\EyeWitnessReportController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController;
 
 Route::get('/', function () {
     return response()->json([
@@ -32,25 +34,17 @@ Route::group([
 });
 
 Route::group([
-    'prefix' => 'petitions'
+    'prefix' => 'posts'
 ], function () {
-    Route::get('/', [PetitionController::class, 'index'])->name('index');
-    Route::post('/', [PetitionController::class, 'create'])->name('create');
-    Route::get('/{id}', [PetitionController::class, 'show'])->name('show');
-    Route::post('/{id}/sign', [PetitionController::class, 'sign'])->name('sign');
-    Route::get('/{id}/comments', [PetitionController::class, 'comments'])->name('comments');
-    Route::get('/{id}/share', [PetitionController::class, 'share'])->name('share');
-});
+    Route::get('/', [PostController::class, 'index'])->name('index');
+    Route::post('/', [PostController::class, 'create'])->name('create');
+    Route::get('/{id}', [PostController::class, 'show'])->name('show');
+    Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
+    Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
+    Route::get('/{id}/share', [PostController::class, 'share'])->name('share');
 
-Route::group([
-    'prefix' => 'reports'
-], function () {
-    Route::get('/', [EyeWitnessReportController::class, 'index'])->name('index');
-    Route::post('/', [EyeWitnessReportController::class, 'create'])->name('create');
-    Route::get('/{id}', [EyeWitnessReportController::class, 'show'])->name('show');
-    Route::post('/{id}/approve', [EyeWitnessReportController::class, 'approve'])->name('approve');
-    Route::get('/{id}/comments', [EyeWitnessReportController::class, 'comments'])->name('comments');
-    Route::get('/{id}/share', [EyeWitnessReportController::class, 'share'])->name('share');
+    Route::post('/{id}/comment', [CommentController::class, 'create'])->name('create');
+    Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
 });
 
 Route::group([
