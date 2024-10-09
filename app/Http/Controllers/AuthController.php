@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateAccountRequest;
 use Illuminate\Support\Facades\Log;
-use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
@@ -55,7 +54,7 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        $user = Account::getAccount($this->db, $credentials['email']);
+        $user = $this->accountFactory->getAccount($credentials['email']);
 
         if ($user) {
             if (Hash::check($credentials['password'], $user->password)) {
@@ -93,7 +92,7 @@ class AuthController extends Controller
         }
         Log::info('Social User Info:', ['socialUser' => json_encode($socialUser)]);
 
-        $user = Account::getAccount($this->db, $socialUser->getEmail());
+        $user = $this->accountFactory->getAccount($socialUser->getEmail());
 
         if (!$user) {
             $userData = [
@@ -109,22 +108,6 @@ class AuthController extends Controller
         $token = auth()->login($user);
 
         return $this->tokenResponse($token);
-    }
-
-    /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function profile()
-    {
-        $currentUser = auth()->user();
-        return response()->json([
-        'id' => $currentUser->id,
-        'name' => $currentUser->name,
-        'email' => $currentUser->email,
-        'account_type' => $currentUser->account_type,
-    ]);
     }
 
     /**

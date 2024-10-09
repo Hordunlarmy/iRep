@@ -7,15 +7,15 @@ use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Account;
+use Database\Factories\AccountFactory;
 
 class JWTAuthMiddleware
 {
-    protected $db;
+    protected $accountFactory;
 
-    public function __construct($db = null)
+    public function __construct(AccountFactory $accountFactory)
     {
-        $this->db = $db ?: app('db')->connection()->getPdo();
+        $this->accountFactory = $accountFactory;
     }
 
     public function handle(Request $request, Closure $next)
@@ -31,7 +31,7 @@ class JWTAuthMiddleware
             $payload = JWTAuth::setToken($token)->getPayload();
             $userId = $payload['sub'];
 
-            $user = Account::getAccount($this->db, $userId);
+            $user = $this->accountFactory->getAccount($userId);
 
             if (!$user) {
                 return response()->json(['error' => 'User not found'], Response::HTTP_NOT_FOUND);

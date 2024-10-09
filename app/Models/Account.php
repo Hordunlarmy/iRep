@@ -6,7 +6,6 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -106,25 +105,4 @@ class Account extends Authenticatable implements JWTSubject
         ];
     }
 
-    public static function getAccount($db, $identifier)
-    {
-        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
-            $query = "SELECT * FROM accounts WHERE email = ?";
-        } else {
-            $identifier = (int) $identifier;
-            $query = "SELECT * FROM accounts WHERE id = ?";
-        }
-
-        $stmt = $db->prepare($query);
-        $stmt->execute([$identifier]);
-
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if ($result) {
-            // Return an instance of the Account class
-            return new self($db, $result);
-        }
-
-        return null;
-    }
 }

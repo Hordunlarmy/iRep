@@ -2,15 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AccountSearchController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PetitionController;
 use App\Http\Controllers\EyeWitnessReportController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController;
 
 Route::get('/', function () {
     return response()->json([
-            'message' => 'Pong!',
-            'status' => 'success'
-        ]);
+        'message' => 'Pong!',
+        'status' => 'success'
+    ]);
 });
 
 Route::group([
@@ -23,36 +25,36 @@ Route::group([
     Route::post('resend', [AuthController::class, 'resendActivation'])->name('resend');
 
     Route::group([
-            'middleware' => ['auth:api', 'verified']
+        'middleware' => ['auth:api', 'verified']
     ], function () {
         Route::post('login', [AuthController::class, 'login'])->name('login')->withoutMiddleware('auth:api');
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-        Route::get('profile', [AuthController::class, 'profile'])->name('profile');
     });
 });
 
 Route::group([
-    'prefix' => 'petitions'
+    'prefix' => 'posts'
 ], function () {
-    Route::get('/', [PetitionController::class, 'index'])->name('index');
-    Route::post('/', [PetitionController::class, 'create'])->name('create');
-    Route::get('/{id}', [PetitionController::class, 'show'])->name('show');
-    Route::post('/{id}/sign', [PetitionController::class, 'sign'])->name('sign');
-    Route::get('/{id}/comments', [PetitionController::class, 'comments'])->name('comments');
-    Route::get('/{id}/share', [PetitionController::class, 'share'])->name('share');
+    Route::get('/', [PostController::class, 'index'])->name('index');
+    Route::post('/', [PostController::class, 'create'])->name('create');
+    Route::get('/{id}', [PostController::class, 'show'])->name('show');
+    Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
+    Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
+    Route::post('{id}/like', [PostController::class, 'like'])->name('like');
+    Route::post('{id}/repost', [PostController::class, 'repost'])->name('repost');
+    Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('bookmark');
+    Route::get('/{id}/share', [PostController::class, 'share'])->name('share');
+
+    Route::post('/{id}/comment', [CommentController::class, 'create'])->name('create');
+    Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
+
 });
 
 Route::group([
-    'prefix' => 'reports'
+    'prefix' => 'accounts'
 ], function () {
-    Route::get('/', [EyeWitnessReportController::class, 'index'])->name('index');
-    Route::post('/', [EyeWitnessReportController::class, 'create'])->name('create');
-    Route::get('/{id}', [EyeWitnessReportController::class, 'show'])->name('show');
-    Route::post('/{id}/approve', [EyeWitnessReportController::class, 'approve'])->name('approve');
-    Route::get('/{id}/comments', [EyeWitnessReportController::class, 'comments'])->name('comments');
-    Route::get('/{id}/share', [EyeWitnessReportController::class, 'share'])->name('share');
+    Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
+    Route::get('/representatives', [AccountController::class, 'listRepresentatives']);
+    Route::get('/{id}', [AccountController::class, 'getAccount']);
 });
-
-
-Route::get('/accounts/search', [AccountSearchController::class, 'search']);

@@ -26,7 +26,7 @@ class AccountFactory
     {
         $emailService = app('emailService');
 
-        $otp = Str::random(6);
+        $otp = strtoupper(Str::random(4));
         $this->saveVerificationToken($accountId, $otp);
 
         $emailService = app('emailService');
@@ -37,11 +37,11 @@ class AccountFactory
     }
 
     /**
-     * Create an account
-     *
-     * @param array $data
-     * @return int
-     */
+      * Create an account
+      *
+      * @param array $data
+      * @return int
+      */
     public function createAccount($data)
     {
         try {
@@ -79,9 +79,32 @@ class AccountFactory
         }
     }
 
+    public function getAccount($identifier)
+    {
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $query = "SELECT * FROM accounts WHERE email = ?";
+        } else {
+            $identifier = (int) $identifier;
+            $query = "SELECT * FROM accounts WHERE id = ?";
+        }
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$identifier]);
+
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($result) {
+            // Return an instance of the Account class
+            return new Account($this->db, $result);
+        }
+
+        return null;
+    }
+
+
     public function resendActivation($email)
     {
-        $account = Account::getAccount($this->db, $email);
+        $account = $this->getAccount($email);
 
         if ($account->email_verified == 1) {
             throw new HttpException(400, 'Email already verified.');
@@ -115,8 +138,8 @@ class AccountFactory
     {
         try {
             $query = 'SELECT vt.account_id, a.account_type FROM verification_tokens vt
-                  JOIN accounts a ON vt.account_id = a.id
-                  WHERE a.email = ? AND vt.token = ?';
+			JOIN accounts a ON vt.account_id = a.id
+			WHERE a.email = ? AND vt.token = ?';
             $stmt = $this->db->prepare($query);
 
             // Execute the query and log the result
@@ -160,5 +183,54 @@ class AccountFactory
         $query = 'UPDATE accounts SET email_verified = ? WHERE id = ?';
         $stmt = $this->db->prepare($query);
         $stmt->execute([true, $accountId]);
+    }
+
+    public function getRepresentatives($criteria)
+    {
+        $query = 'SELECT * FROM accounts WHERE account_type = ?';
+        $params = [2];
+
+        $search = $criteria['search'] ?? null;
+        $stateFilter = $criteria['state'] ?? null;
+        $positionFilter = $criteria['position'] ?? null;
+        $localGovtFilter = $criteria['local_government'] ?? null;
+        $sortBy = $criteria['sort_by'] ?? 'created_at';
+        $sortOrder = $criteria['sort_order'] ?? 'desc';
+
+        if ($search) {
+            $query .= ' AND (name LIKE ? OR email LIKE ? OR phone_number LIKE ?)';
+            $params = array_merge($params, array_fill(0, 3, '%' . $search . '%'));
+        }
+
+        if ($stateFilter) {
+            $query .= ' AND state = ?';
+            $params[] = $stateFilter;
+        }
+
+        if ($positionFilter) {
+            $query .= ' AND position = ?';
+            $params[] = $positionFilter;
+        }
+
+        if ($localGovtFilter) {
+            $query .= ' AND local_government = ?';
+            $params[] = $localGovtFilter;
+        }
+        $allowedSortColumns = ['created_at', 'name', 'constituency', 'state'];
+        $allowedSortOrders = ['asc', 'desc'];
+
+        if (in_array($sortBy, $allowedSortColumns) && in_array($sortOrder, $allowedSortOrders)) {
+            $query .= " ORDER BY {$sortBy} {$sortOrder}";
+        }
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute($params);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            Log::error('Error fetching representatives: ' . $e->getMessage());
+            return [];
+        }
     }
 }
