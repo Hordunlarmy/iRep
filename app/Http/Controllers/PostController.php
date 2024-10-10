@@ -51,9 +51,9 @@ class PostController extends Controller
             return response()->json([
             'data' => PostResource::collection($posts),
             'meta' => [
-                'total' => $total,
-                'current_page' => $currentPage,
-                'last_page' => $lastPage,
+                'total' => (int) $total,
+                'current_page' => (int) $currentPage,
+                'last_page' => (int) $lastPage,
                 'page_size' => $criteria['page_size'] ?? 10,
             ],
         ], 200);

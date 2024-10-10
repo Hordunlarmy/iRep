@@ -41,7 +41,7 @@ class PostFactory extends CommentFactory
     public function getPosts(array $criteria = [])
     {
         $page = $criteria['page'] ?? 1;
-        $pageSize = $criteria['pageSize'] ?? 10;
+        $pageSize = $criteria['page_size'] ?? 10;
         $offset = ($page - 1) * $pageSize;
         $params = [];
 

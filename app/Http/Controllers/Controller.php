@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Database\Factories\AccountFactory;
 use Database\Factories\PostFactory;
 use Database\Factories\CommentFactory;
+use Database\Factories\MessageFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,6 +23,7 @@ abstract class Controller extends BaseController
     protected $accountFactory;
     protected $postFactory;
     protected $commentFactory;
+    protected $messageFactory;
 
     /**
      * Create a new Controller instance and initialize the database connection.
@@ -34,6 +36,7 @@ abstract class Controller extends BaseController
         $this->accountFactory = new AccountFactory();
         $this->postFactory = new PostFactory();
         $this->commentFactory = new CommentFactory();
+        $this->messageFactory = new MessageFactory();
     }
 
     /**
