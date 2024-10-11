@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
+use App\Models\Account;
 
 class AuthController extends Controller
 {
@@ -54,7 +55,10 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        $user = $this->accountFactory->getAccount($credentials['email']);
+        $result = $this->accountFactory->getAccount($credentials['email']);
+        $resultArray = json_decode(json_encode($result), true);
+
+        $user = new Account(null, $resultArray);
 
         if ($user) {
             if (Hash::check($credentials['password'], $user->password)) {

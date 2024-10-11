@@ -51,9 +51,9 @@ class PostController extends Controller
             return response()->json([
             'data' => PostResource::collection($posts),
             'meta' => [
-                'total' => $total,
-                'current_page' => $currentPage,
-                'last_page' => $lastPage,
+                'total' => (int) $total,
+                'current_page' => (int) $currentPage,
+                'last_page' => (int) $lastPage,
                 'page_size' => $criteria['page_size'] ?? 10,
             ],
         ], 200);
@@ -62,10 +62,37 @@ class PostController extends Controller
         }
     }
 
+    public function getUserPosts(Request $request)
+    {
+        try {
+            $criteria = $request->only(['search', 'filter', 'sort_by', 'sort_order', 'page', 'page_size']);
+            $criteria['creator_id'] = Auth::id();
+            $result = $this->postFactory->getPosts($criteria);
+
+            $posts = $result['data'];
+            $total = $result['total'];
+            $currentPage = $result['current_page'];
+            $lastPage = $result['last_page'];
+
+            return response()->json([
+                'data' => PostResource::collection($posts),
+                'meta' => [
+                    'total' => (int) $total,
+                    'current_page' => (int) $currentPage,
+                    'last_page' => (int) $lastPage,
+                    'page_size' => $criteria['page_size'] ?? 10,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch posts ' . $e->getMessage()], 500);
+        }
+    }
+
+
     public function show($id, Request $request)
     {
         try {
-            $post = Controller::findPost($id);
+            $post = Controller::findEntity('post', $id);
             return response()->json((new PostResource($post))->toDetailArray($request), 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch post ' . $e->getMessage()], 500);
@@ -74,7 +101,7 @@ class PostController extends Controller
 
     public function signPetition($id, CommentRequest $request)
     {
-        Controller::findPost($id);
+        Controller::findEntity('post', $id);
 
         if ($this->postFactory->hasUserSigned($id, Auth::id())) {
             return response()->json(['message' => 'You have already signed this post'], 400);
@@ -90,7 +117,7 @@ class PostController extends Controller
 
     public function approveReport($id, CommentRequest $request)
     {
-        Controller::findPost($id);
+        Controller::findEntity('post', $id);
 
         if ($this->postFactory->hasUserApproved($id, Auth::id())) {
             return response()->json(['message' => 'You have already approved this report'], 400);
@@ -104,38 +131,25 @@ class PostController extends Controller
         return response()->json(['message' => 'success']);
     }
 
-    public function toggleAction($actionType, $id)
-    {
-        Controller::findPost($id);
-        $accountId = Auth::id();
-
-        $result = $this->postFactory->toggleAction($actionType, $id, $accountId);
-
-        if ($result) {
-            return response()->json(['message' => $result], 200);
-        }
-        return response()->json(['message' => 'Action failed'], 400);
-    }
-
     public function like($id)
     {
-        return $this->toggleAction('likes', $id);
+        return $this->toggleAction('post', 'likes', $id);
     }
 
     public function repost($id)
     {
-        return $this->toggleAction('reposts', $id);
+        return $this->toggleAction('post', 'reposts', $id);
     }
 
     public function bookmark($id)
     {
-        return $this->toggleAction('bookmarks', $id);
+        return $this->toggleAction('post', 'bookmarks', $id);
     }
 
 
     public function share($id)
     {
-        Controller::findPost($id);
+        Controller::findEntity('post', $id);
 
         $shareableUrl = url("/api/posts/{$id}");
         $twitterShareUrl = "https://twitter.com/intent/tweet?url={$shareableUrl}";

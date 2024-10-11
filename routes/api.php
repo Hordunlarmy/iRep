@@ -3,10 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\PetitionController;
-use App\Http\Controllers\EyeWitnessReportController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
     return response()->json([
@@ -58,3 +57,10 @@ Route::group([
     Route::get('/representatives', [AccountController::class, 'listRepresentatives']);
     Route::get('/{id}', [AccountController::class, 'getAccount']);
 });
+
+Route::group([
+    'prefix' => 'chats',
+    'middleware' => ['auth:api']], function () {
+        Route::post('/send', [ChatController::class, 'send'])->name('send');
+        Route::get('/{id}', [ChatController::class, 'index'])->name('index');
+    });

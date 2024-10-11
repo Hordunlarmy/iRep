@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Database\Factories\AccountFactory;
 use Database\Factories\PostFactory;
 use Database\Factories\CommentFactory;
+use Database\Factories\MessageFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,6 +23,7 @@ abstract class Controller extends BaseController
     protected $accountFactory;
     protected $postFactory;
     protected $commentFactory;
+    protected $messageFactory;
 
     /**
      * Create a new Controller instance and initialize the database connection.
@@ -34,6 +36,7 @@ abstract class Controller extends BaseController
         $this->accountFactory = new AccountFactory();
         $this->postFactory = new PostFactory();
         $this->commentFactory = new CommentFactory();
+        $this->messageFactory = new MessageFactory();
     }
 
     /**
@@ -55,14 +58,38 @@ abstract class Controller extends BaseController
         ]);
     }
 
-    public function findPost($id)
+    public function toggleAction($entity, $actionType, $id)
     {
-        $postData = $this->postFactory->getPost($id);
+        $this->findEntity($entity, $id);
 
-        if (!$postData) {
-            return response()->json(['message' => 'post not found'], 404);
+        $accountId = Auth::id();
+
+        $result = $this->{$entity . 'Factory'}->toggleAction($actionType, $id, $accountId);
+
+        if ($result) {
+            return response()->json(['message' => $result], 200);
+        }
+        return response()->json(['message' => 'Action failed'], 400);
+    }
+
+
+    public function findEntity($type, $id)
+    {
+        if ($type === 'post') {
+            $data = $this->postFactory->getPost($id);
+        } elseif ($type === 'comment') {
+            $data = $this->commentFactory->getComment($id);
+        } elseif ($type === 'account') {
+            $data = $this->accountFactory->getAccount($id);
+        } else {
+            return response()->json(['message' => 'Invalid entity type'], 400);
         }
 
-        return $postData;
+        if (!$data) {
+            return response()->json(['message' => "{$type} not found"], 404);
+        }
+
+        return $data;
     }
+
 }

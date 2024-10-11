@@ -85,36 +85,36 @@ return new class () extends Migration {
         DB::statement("
 			CREATE TABLE likes (
 			id INT AUTO_INCREMENT PRIMARY KEY,
-			post_id INT NOT NULL,
+			entity_id INT NOT NULL,
+			entity_type ENUM('post', 'comment') NOT NULL,
 			account_id INT NOT NULL,
 			liked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 			FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
-			UNIQUE (post_id, account_id)
+			UNIQUE (entity_id, entity_type, account_id)
 			)
 			");
 
         DB::statement("
 			CREATE TABLE reposts (
 			id INT AUTO_INCREMENT PRIMARY KEY,
-			post_id INT NOT NULL,
+			entity_id INT NOT NULL,
+			entity_type ENUM('post', 'comment') NOT NULL,
 			account_id INT NOT NULL,
 			reposted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 			FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
-			UNIQUE (post_id, account_id)
+			UNIQUE (entity_id, entity_type, account_id)
 			)
 			");
 
         DB::statement("
 			CREATE TABLE bookmarks (
 			id INT AUTO_INCREMENT PRIMARY KEY,
-			post_id INT NOT NULL,
+			entity_id INT NOT NULL,
+			entity_type ENUM('post', 'comment') NOT NULL,
 			account_id INT NOT NULL,
 			bookmarked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 			FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
-			UNIQUE (post_id, account_id)
+			UNIQUE (entity_id, entity_type, account_id)
 			)
 			");
 
