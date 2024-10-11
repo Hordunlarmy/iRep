@@ -24,4 +24,32 @@ class CommentController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        $comment = $this->commentFactory->getComment($id);
+
+        if (!$comment) {
+            return response()->json([
+                'message' => 'Comment not found.'
+            ], 404);
+        }
+
+        return response()->json($comment);
+    }
+
+    public function like($id)
+    {
+        return $this->toggleAction('comment', 'likes', $id);
+    }
+
+    public function repost($id)
+    {
+        return $this->toggleAction('comment', 'reposts', $id);
+    }
+
+    public function bookmark($id)
+    {
+        return $this->toggleAction('comment', 'bookmarks', $id);
+    }
+
 }

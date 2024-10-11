@@ -8,9 +8,9 @@ use App\Jobs\SendMessage;
 
 class ChatController extends Controller
 {
-    public function index($receiverId)
+    public function index($id)
     {
-        $messages = $this->messageFactory->getMessages(Auth::id(), $receiverId);
+        $messages = $this->messageFactory->getMessages(Auth::id(), $id);
 
         return response()->json($messages);
     }

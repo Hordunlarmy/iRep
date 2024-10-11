@@ -10,15 +10,15 @@ class PostResource extends JsonResource
     public function toArray($request)
     {
         $likesCount = DB::table('likes')
-            ->where('post_id', $this->id)
+            ->where('entity_id', $this->id)
             ->count() ?? 0;
 
         $repostsCount = DB::table('reposts')
-            ->where('post_id', $this->id)
+            ->where('entity_id', $this->id)
             ->count() ?? 0;
 
         $bookmarksCount = DB::table('bookmarks')
-            ->where('post_id', $this->id)
+            ->where('entity_id', $this->id)
             ->count() ?? 0;
 
         return [

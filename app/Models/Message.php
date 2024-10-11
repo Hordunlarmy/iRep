@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Message
 {
-    protected $id;
+    public $id;
     public $senderId;
     public $receiverId;
     protected $message;
