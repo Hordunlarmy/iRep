@@ -79,6 +79,8 @@ abstract class Controller extends BaseController
             $data = $this->postFactory->getPost($id);
         } elseif ($type === 'comment') {
             $data = $this->commentFactory->getComment($id);
+        } elseif ($type === 'account') {
+            $data = $this->accountFactory->getAccount($id);
         } else {
             return response()->json(['message' => 'Invalid entity type'], 400);
         }

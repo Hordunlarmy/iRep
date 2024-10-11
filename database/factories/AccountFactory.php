@@ -81,24 +81,31 @@ class AccountFactory
 
     public function getAccount($identifier)
     {
-        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
-            $query = "SELECT * FROM accounts WHERE email = ?";
-        } else {
-            $identifier = (int) $identifier;
-            $query = "SELECT * FROM accounts WHERE id = ?";
-        }
+        $query = "
+		SELECT
+		a.*,
+		CASE
+		WHEN a.account_type = 1 THEN JSON_OBJECT(
+		'occupation', c.occupation,
+		'location', c.location
+		)
+		WHEN a.account_type = 2 THEN JSON_OBJECT(
+		'position', r.position,
+		'constituency', r.constituency,
+		'party', r.party,
+		'bio', r.bio
+		)
+		ELSE NULL
+		END AS account_data
+		FROM accounts a
+		LEFT JOIN citizens c ON a.id = c.account_id AND a.account_type = 1
+		LEFT JOIN representatives r ON a.id = r.account_id AND a.account_type = 2
+		WHERE a.id = ? OR a.email = ?";
 
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$identifier]);
+        $stmt->execute([$identifier, $identifier]);
 
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if ($result) {
-            // Return an instance of the Account class
-            return new Account($this->db, $result);
-        }
-
-        return null;
+        return $stmt->fetchObject();
     }
 
 

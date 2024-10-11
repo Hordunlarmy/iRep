@@ -105,6 +105,7 @@ class PostFactory extends CommentFactory
     {
         $search = $criteria['search'] ?? null;
         $filter = $criteria['filter'] ?? null;
+        $creatorId = $criteria['creator_id'] ?? null;
 
         if (!empty($search)) {
             $searchTerm = "%{$search}%";
@@ -116,6 +117,11 @@ class PostFactory extends CommentFactory
         if (!empty($filter)) {
             $query .= " AND p.post_type = ?";
             $params[] = $filter;
+        }
+
+        if (!empty($creatorId)) {
+            $query .= " AND p.creator_id = ?";
+            $params[] = $creatorId;
         }
 
         return [$query, $params];

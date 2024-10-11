@@ -14,19 +14,17 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function profile()
+    public function profile(Request $request)
     {
         $currentUser = Auth::user();
 
-        return response()->json([
-        'id' => $currentUser->id,
-        'name' => $currentUser->name,
-        'email' => $currentUser->email,
-        'account_type' => $currentUser->account_type,
-    ]);
+        $account = $this->findEntity('account', $currentUser->id);
+
+        return response()->json((new AccountResource($account))->toProfileArray($request), 200);
+
     }
 
-    public function getAccount($id)
+    public function getAccount($id, Request $request)
     {
         if (!is_int($id) && !ctype_digit($id)) {
             return response()->json([
@@ -34,15 +32,10 @@ class AccountController extends Controller
             ], 400);
         }
 
-        $account = $this->accountFactory->getAccount((int) $id);
+        $account = $this->findEntity('account', $id);
 
-        if (!$account) {
-            return response()->json([
-                'message' => 'Account not found.'
-            ], 404);
-        }
+        return response()->json((new AccountResource($account))->toArray($request), 200);
 
-        return response()->json(new AccountResource($account));
     }
 
     public function listRepresentatives(Request $request)
