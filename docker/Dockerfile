@@ -1,11 +1,15 @@
 FROM php:8.3-cli
 
-# Install system dependencies and required PHP extensions
-RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    unzip \
-    && docker-php-ext-install \
-    mysqli pdo pdo_mysql zip \
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y \
+        libzip-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
+        unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd mysqli pdo pdo_mysql zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -13,7 +17,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set the working directory
-WORKDIR /var/www
+WORKDIR /workspace/irep
 
 # Copy the application files to the working directory
 COPY . .
@@ -21,12 +25,15 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install
 
-# Set permissions for the Apache user
-RUN chown -R www-data:www-data /var/www
-
 # Expose the port for the Laravel application
 EXPOSE 8000
 
-# Run the Laravel application using artisan serve
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Copy the entrypoint script into the image
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
