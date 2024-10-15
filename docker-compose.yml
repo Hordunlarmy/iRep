@@ -1,11 +1,33 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "80:8000"
+    volumes:
+      - .:/workspace/irep
+    env_file:
+      - .env
+    environment:
+      DB_HOST: database
+    depends_on:
+      - database
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   database:
     image: mariadb:latest
-    container_name: irep-database 
+    container_name: irep-database
     ports:
       - "3309:3306"
     env_file:
-      - database.env
+      - docker/database.env
     volumes:
       - irepdata:/var/lib/mysql
     restart: always
@@ -18,3 +40,4 @@ services:
 
 volumes:
   irepdata:
+

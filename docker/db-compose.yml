@@ -1,0 +1,20 @@
+services:
+  database:
+    image: mariadb:latest
+    container_name: irep-database
+    ports:
+      - "3309:3306"
+    env_file:
+      - database.env
+    volumes:
+      - irepdata:/var/lib/mysql
+    restart: always
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+volumes:
+  irepdata:
