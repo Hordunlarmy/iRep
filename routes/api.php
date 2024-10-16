@@ -6,6 +6,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ChatController;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
     return response()->json([
@@ -13,6 +14,16 @@ Route::get('/', function () {
         'status' => 'success'
     ]);
 });
+
+Route::get('/account-types', function () {
+    $accountTypes = DB::table('account_types')
+        ->select('id', 'name')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return response()->json($accountTypes, 200);
+});
+
 
 Route::group([
     'prefix' => 'auth'
@@ -24,9 +35,10 @@ Route::group([
     Route::post('resend', [AuthController::class, 'resendActivation'])->name('resend');
 
     Route::group([
-        'middleware' => ['auth:api', 'verified']
+        'middleware' => ['auth:api', 'activated']
     ], function () {
         Route::post('login', [AuthController::class, 'login'])->name('login')->withoutMiddleware('auth:api');
+        Route::post('onboard', [AuthController::class, 'onboard'])->name('onboard');
         Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     });

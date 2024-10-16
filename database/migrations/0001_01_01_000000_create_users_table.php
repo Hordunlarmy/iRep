@@ -18,7 +18,6 @@ return new class () extends Migration {
 
         // Seed the account_types table
         DB::table('account_types')->insert([
-            ['id' => 0, 'name' => 'social'],
             ['id' => 1, 'name' => 'citizen'],
             ['id' => 2, 'name' => 'representative'],
             ['id' => 3, 'name' => 'admin'],
@@ -29,16 +28,18 @@ return new class () extends Migration {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			photo_url VARCHAR(255),
 			cover_photo_url VARCHAR(255),
-			name VARCHAR(255) NOT NULL,
+			name VARCHAR(255),
 			email VARCHAR(255) UNIQUE NOT NULL,
+			password VARCHAR(255),
 			phone_number VARCHAR(20) UNIQUE,
 			gender ENUM('male', 'female', 'other'),
 			dob DATE,
 			state VARCHAR(255),
 			local_government VARCHAR(255),
 			polling_unit VARCHAR(255),
-			password VARCHAR(255) NOT NULL,
+			kyc_url VARCHAR(255),
 			email_verified BOOLEAN DEFAULT FALSE,
+			kyced BOOLEAN DEFAULT FALSE,
 			remember_token VARCHAR(100),
 			account_type INT,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -52,7 +53,7 @@ return new class () extends Migration {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			occupation VARCHAR(255),
 			location VARCHAR(255),
-			account_id INT NOT NULL,
+			account_id INT NOT NULL UNIQUE,
 			FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 			)
 			");
@@ -60,11 +61,13 @@ return new class () extends Migration {
         DB::statement("
 			CREATE TABLE representatives (
 			id INT AUTO_INCREMENT PRIMARY KEY,
+			sworn_in_date DATE,
 			position VARCHAR(255),
 			constituency VARCHAR(255),
 			party VARCHAR(255),
+			social_handles JSON,
 			bio TEXT,
-			account_id INT,
+			account_id INT NOT NULL UNIQUE,
 			FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 			)
 			");

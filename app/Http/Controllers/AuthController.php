@@ -3,22 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateAccountRequest;
+use App\Http\Requests\OnboardAccountRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\Account;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function register(CreateAccountRequest $request)
+    public function register(Request $request)
     {
         try {
-            $account = $this->accountFactory->createAccount($request->validated());
-            Log::info('Account created successfully.', ['account_id' => $account->id]);
+            $validated = $request->validate([
+                'account_type' => 'required|integer|exists:account_types,id',
+                'email' => 'required|email|unique:accounts,email|max:255',
+                'password' => 'required|string|min:8',
+            ]);
 
-            return response()->json(['account_id' => $account->id], 201);
+            $account = $this->accountFactory->createAccount($validated);
+
+            return response()->json([
+                'account_id' => $account->id,
+                'account_type' => $account->account_type
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['error' => 'Validation failed.', 'details' => $errors], 422);
+
         } catch (\Exception $e) {
             Log::error('Account creation failed.', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Account creation failed.'], 500);
@@ -30,13 +44,13 @@ class AuthController extends Controller
         $email = $request->input('email');
         $otp = $request->input('otp');
 
-        $verified = $this->accountFactory->activateAccount($email, $otp);
+        $activated = $this->accountFactory->activateAccount($email, $otp);
 
-        if (!$verified) {
+        if (!$activated) {
             return response()->json(['error' => 'Invalid OTP'], 400);
         }
 
-        $token = auth()->login($verified);
+        $token = Auth::login($activated);
         return $this->tokenResponse($token);
 
     }
@@ -50,9 +64,27 @@ class AuthController extends Controller
         return response()->json(['message' => 'Activation email sent.'], 200);
     }
 
+    public function onboard(OnboardAccountRequest $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validated();
+        $validated['account_type'] = $user->account_type;
+        $validated['id'] = $user->id;
+
+        $account = $this->accountFactory->insertAccountDetails($validated);
+
+        return response()->json(['account_id' => $account->id], 201);
+
+    }
 
     public function login(Request $request)
     {
+        $request->validate([
+        'email' => 'required|email|exists:accounts,email',
+        'password' => 'required'
+        ]);
+
         $credentials = $request->only('email', 'password');
 
         $result = $this->accountFactory->getAccount($credentials['email']);
@@ -63,7 +95,7 @@ class AuthController extends Controller
         if ($user) {
             if (Hash::check($credentials['password'], $user->password)) {
                 Log::info('User authenticated');
-                $token = auth()->login($user);
+                $token = Auth::login($user);
 
                 return $this->tokenResponse($token);
             } else {
@@ -76,24 +108,13 @@ class AuthController extends Controller
 
     public function redirect($provider)
     {
-        if ($provider == 'twitter') {
-            $twitter = Socialite::driver($provider);
-            $requestToken = $twitter->getRequestToken();
-            Cache::put('oauth_request_token_' . request()->ip(), $requestToken, now()->addMinutes(10));
-            return redirect()->away($twitter->getAuthorizationUrl($requestToken));
-        }
-
         // For OAuth 2.0 providers like Google, Facebook, etc., use stateless
         return Socialite::driver($provider)->stateless()->redirect();
     }
 
     public function callback($provider)
     {
-        if ($provider == 'twitter') {
-            $socialUser = Socialite::driver($provider)->user();
-        } else {
-            $socialUser = Socialite::driver($provider)->stateless()->user();
-        }
+        $socialUser = Socialite::driver($provider)->stateless()->user();
         Log::info('Social User Info:', ['socialUser' => json_encode($socialUser)]);
 
         $user = $this->accountFactory->getAccount($socialUser->getEmail());
@@ -109,7 +130,7 @@ class AuthController extends Controller
             $this->accountFactory->setEmailVerified($user->id);
         }
 
-        $token = auth()->login($user);
+        $token = Auth::login($user);
 
         return $this->tokenResponse($token);
     }
@@ -121,7 +142,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
+        Auth::invalidate(true, true);
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -133,7 +154,7 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->tokenResponse(auth()->refresh());
+        return $this->tokenResponse(Auth::refresh(true, true));
 
     }
 

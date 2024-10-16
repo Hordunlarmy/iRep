@@ -53,7 +53,7 @@ class Email
         }
     }
 
-    public function sendNewUserVerification($recipientEmail, $recipientName, array $templateVariables)
+    public function sendNewUserVerification($recipientEmail, $recipientName = '', array $templateVariables = [])
     {
         return $this->sendEmail(
             $this->templates::$userVerification,
@@ -63,7 +63,7 @@ class Email
         );
     }
 
-    public function sendResetPasswordVerification($recipientEmail, $recipientName, array $templateVariables)
+    public function sendResetPasswordVerification($recipientEmail, $recipientName = '', array $templateVariables = [])
     {
         return $this->sendEmail(
             $this->templates::$resetPassword,
@@ -72,4 +72,5 @@ class Email
             $templateVariables
         );
     }
+
 }

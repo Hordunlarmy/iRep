@@ -16,67 +16,80 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class AccountFactory
 {
     protected $db;
+    protected $accountColumns = null;
 
     public function __construct($db = null)
     {
         $this->db = $db ?: DB::connection()->getPdo();
     }
 
-    protected function sendVerificationEmail($accountId, $email, $name)
-    {
-        $emailService = app('emailService');
-
-        $otp = strtoupper(Str::random(4));
-        $this->saveVerificationToken($accountId, $otp);
-
-        $emailService = app('emailService');
-        $templateVariables = [
-            'otp' => $otp,
-        ];
-        $emailService->sendNewUserVerification($email, $name, $templateVariables);
-    }
-
-    /**
-      * Create an account
-      *
-      * @param array $data
-      * @return int
-      */
     public function createAccount($data)
     {
         try {
             $this->db->beginTransaction();
 
-            log::info('Transaction started.');
-
             $account = new Account($this->db, $data);
             $accountId = $account->insertAccount();
 
-            log::info('Initial account created.', ['account_id' => $accountId]);
-
-            if ($data['account_type'] === 'citizen') {
-                (new Citizen($accountId, $data))->insert($this->db);
-            } elseif ($data['account_type'] === 'representative') {
-                (new Representative($accountId, $data))->insert($this->db);
-            } elseif ($data['account_type'] === 'social') {
-                // Do nothing
-            } else {
-                throw new \Exception('Invalid account type.');
+            if ($data['account_type'] !== 0) {
+                $this->sendVerificationEmail($accountId, $data['email']);
             }
 
-            if ($data['account_type'] !== 'social') {
-                $this->sendVerificationEmail($accountId, $data['email'], $data['name']);
-            }
-
-            log::info('Transaction completed.');
             $this->db->commit();
-            log::info('Transaction committed.');
 
             return new Account($this->db, ['id' => $accountId, 'account_type' => $data['account_type']]);
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    public function insertAccountDetails($data)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            Log::info('Initiating onboarding for account: ' . $data['id']);
+
+            $accountId = $this->updateAccount($data['id'], $data);
+
+            if ($data['account_type'] === 1) {
+                (new Citizen($accountId, $data))->insert($this->db);
+            } elseif ($data['account_type'] === 2) {
+                (new Representative($accountId, $data))->insert($this->db);
+            } else {
+                // Do nothing
+            }
+            $this->db->commit();
+
+            return new Account($this->db, ['id' => $accountId, 'account_type' => $data['account_type']]);
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function updateAccount($accountId, $data)
+    {
+        $columns = $this->getAccountColumns();
+
+        $fields = [];
+        $values = [];
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $columns) && $key !== 'id') {
+                $fields[] = "$key = ?";
+                $values[] = $value;
+            }
+        }
+
+        $values[] = $accountId;
+
+        $query = 'UPDATE accounts SET ' . implode(', ', $fields) . ' WHERE id = ?';
+
+        $this->db->prepare($query)->execute($values);
+
+        return $accountId;
     }
 
     public function getAccount($identifier)
@@ -108,6 +121,44 @@ class AccountFactory
         return $stmt->fetchObject();
     }
 
+    protected function sendVerificationEmail($accountId, $email, $name = '')
+    {
+        $emailService = app('emailService');
+
+        $otp = strtoupper(Str::random(4));
+        $this->saveVerificationToken($accountId, $otp);
+
+        $templateVariables = [
+            'otp' => $otp,
+        ];
+        $emailService->sendNewUserVerification($email, $name, $templateVariables);
+    }
+
+    protected function getAccountType($accountType)
+    {
+        if (is_int($accountType)) {
+            $query = "SELECT * FROM account_types WHERE id = ?";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([$accountType]);
+        } else {
+            $query = "SELECT * FROM account_types WHERE name = ?";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([$accountType]);
+        }
+
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    private function getAccountColumns()
+    {
+        if ($this->accountColumns === null) {
+            $query = "SHOW COLUMNS FROM accounts";
+            $result = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN);
+            $this->accountColumns = $result;
+        }
+
+        return $this->accountColumns;
+    }
 
     public function resendActivation($email)
     {
@@ -120,13 +171,6 @@ class AccountFactory
     }
 
 
-    /**
-     * Save OTP to the verification_token table
-     *
-     * @param int $accountId
-     * @param string $otp
-     * @return void
-     */
     protected function saveVerificationToken($accountId, $otp)
     {
         $query = 'INSERT INTO verification_tokens (account_id, token) VALUES (?, ?)';
@@ -134,13 +178,6 @@ class AccountFactory
         $stmt->execute([$accountId, $otp]);
     }
 
-    /**
-     * Activate account using OTP
-     *
-     * @param int $accountId
-     * @param string $otp
-     * @return bool
-     */
     public function activateAccount($email, $otp)
     {
         try {
@@ -149,7 +186,6 @@ class AccountFactory
 			WHERE a.email = ? AND vt.token = ?';
             $stmt = $this->db->prepare($query);
 
-            // Execute the query and log the result
             $stmt->execute([trim($email), trim($otp)]);
 
             if ($stmt->rowCount() > 0) {
@@ -179,12 +215,6 @@ class AccountFactory
         }
     }
 
-    /**
-     * Set email_verified to true for the given account
-     *
-     * @param int $accountId
-     * @return void
-     */
     public function setEmailVerified($accountId)
     {
         $query = 'UPDATE accounts SET email_verified = ? WHERE id = ?';

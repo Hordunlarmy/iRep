@@ -36,26 +36,8 @@ class Account extends Authenticatable implements JWTSubject
                 $this->$key = $value;
             }
         }
-
-        if (isset($data['account_type'])) {
-            $this->account_type = $this->getAccountType($data['account_type']);
-        }
     }
 
-    protected function getAccountType($accountType)
-    {
-        if (is_int($accountType)) {
-            $query = "SELECT id FROM account_types WHERE id = ?";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$accountType]);
-        } else {
-            $query = "SELECT id FROM account_types WHERE name = ?";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([$accountType]);
-        }
-
-        return $stmt->fetchColumn();
-    }
     /**
      * Insert a new account into the database
      *
@@ -65,19 +47,13 @@ class Account extends Authenticatable implements JWTSubject
     public function insertAccount(): int
     {
         $query = "
-        INSERT INTO accounts (name, email, phone_number, dob, password, account_type, state,
-        local_government)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        INSERT INTO accounts (email, account_type, password)
+        VALUES (?, ?, ?)";
         $stmt = $this->db->prepare($query);
         $stmt->execute([
-            $this->name,
             $this->email,
-            $this->phone_number,
-            $this->dob,
-            Hash::make($this->password),
             $this->account_type,
-            $this->state,
-            $this->local_government,
+            Hash::make($this->password),
         ]);
 
         return $this->db->lastInsertId();

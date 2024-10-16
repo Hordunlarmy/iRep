@@ -45,7 +45,7 @@ abstract class Controller extends BaseController
      * @param  string  $token
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function tokenResponse($token, $expires_in = null)
+    protected function tokenResponse($token, $statusCode = 200, $expires_in = null)
     {
         if (is_null($expires_in)) {
             $expires_in = Auth::factory()->getTTL() * 60;
@@ -55,7 +55,7 @@ abstract class Controller extends BaseController
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => $expires_in,
-        ]);
+        ], $statusCode);
     }
 
     public function toggleAction($entity, $actionType, $id)

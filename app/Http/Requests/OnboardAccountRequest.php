@@ -5,11 +5,13 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /*
 * Class to validate the request to create an account
 */
-class CreateAccountRequest extends FormRequest
+class OnboardAccountRequest extends FormRequest
 {
     public function authorize()
     {
@@ -21,27 +23,23 @@ class CreateAccountRequest extends FormRequest
     */
     public function rules()
     {
+        $user = Auth::user();
+
+        $accountType = DB::table('account_types')
+            ->where('id', $user->account_type)
+            ->value('name');
+
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:accounts,email|max:255',
-            'phone_number' => 'required|string|unique:accounts,phone_number|max:20',
             'dob' => 'required|date|before:today',
+            'gender' => 'required|string|in:male,female,other',
             'state' => 'required|string|max:255',
             'local_government' => 'required|string|max:255',
-            'password' => 'required|string|min:8|',
-            'account_type' => 'required|string|exists:account_types,name',
-            'occupation' => 'nullable|string|max:255',
-            'location' => 'nullable|string|max:255',
-            'position' => 'nullable|string|max:255',
-            'party' => 'nullable|string|max:255',
-            'constituency' => 'nullable|string|max:255',
-
-            //'occupation' => 'required_if:account_type,citizen|string|max:255',
-            //'location' => 'required_if:account_type,citizen|string|max:255',
-            //'position' => 'required_if:account_type,representative|string|max:255',
-            //'party' => 'required_if:account_type,representative|string|max:255',
-            //'constituency' => 'required_if:account_type,representative|string|max:255',
-
+            'kyc' => 'required_if:$accountType,representative|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,flv,wmv,3gp,webm|max:20480',
+            'position' => 'required_if:$accountType,representative|string|max:255',
+            'party' => 'required_if:$accountType,representative|string|max:255',
+            'constituency' => 'required_if:$accountType,representative|string|max:255',
+            'social_handles' => 'required_if:$accountType,representative|json',
         ];
     }
 
