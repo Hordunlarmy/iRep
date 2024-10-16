@@ -11,6 +11,7 @@ class Representative
     protected $position;
     protected $constituency;
     protected $party;
+    protected $socialMedia;
 
 
     public function __construct($accountId, $data)
@@ -21,6 +22,11 @@ class Representative
                 $this->$key = $value;
             }
         }
+
+        if (is_array($data['social_handles'])) {
+            $this->socialMedia = json_encode($data['social_handles']);
+        }
+
     }
     /**
      * Insert a new representative into the database
@@ -31,10 +37,16 @@ class Representative
     public function insert($db)
     {
         $query = "
-        INSERT INTO representatives (account_id, position, constituency, party)
-        VALUES (?, ?, ?, ?)";
+        INSERT INTO representatives (account_id, position, constituency, party, social_handles)
+        VALUES (?, ?, ?, ?, ?)";
         $stmt = $db->prepare($query);
-        $stmt->execute([$this->accountId, $this->position, $this->constituency, $this->party]);
+        $stmt->execute([
+            $this->accountId,
+            $this->position,
+            $this->constituency,
+            $this->party,
+            $this->socialMedia
+        ]);
 
         return $this->accountId;
     }

@@ -25,7 +25,8 @@ class Post
         }
 
         if (!empty($data['media'])) {
-            $this->media = (new MediaHandler())->handleMediaFiles($data['media']);
+
+            $this->media = app('uploadMediaService')->handleMediaFiles($data['media']);
         }
 
         if (is_array($this->media)) {

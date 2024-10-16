@@ -51,6 +51,11 @@ class AccountFactory
 
             Log::info('Initiating onboarding for account: ' . $data['id']);
 
+            if (!empty($data['kyc'])) {
+
+                $data['kyc'] = app('uploadMediaService')->handleMediaFiles($data['kyc']);
+            }
+
             $accountId = $this->updateAccount($data['id'], $data);
 
             if ($data['account_type'] === 1) {
@@ -78,6 +83,10 @@ class AccountFactory
 
         foreach ($data as $key => $value) {
             if (in_array($key, $columns) && $key !== 'id') {
+                // Handle JSON fields
+                if ($key === 'kyc' && is_array($value)) {
+                    $value = json_encode($value); // Encode array as JSON
+                }
                 $fields[] = "$key = ?";
                 $values[] = $value;
             }
@@ -123,15 +132,13 @@ class AccountFactory
 
     protected function sendVerificationEmail($accountId, $email, $name = '')
     {
-        $emailService = app('emailService');
-
         $otp = strtoupper(Str::random(4));
         $this->saveVerificationToken($accountId, $otp);
 
         $templateVariables = [
             'otp' => $otp,
         ];
-        $emailService->sendNewUserVerification($email, $name, $templateVariables);
+        app('emailService')->sendNewUserVerification($email, $name, $templateVariables);
     }
 
     protected function getAccountType($accountType)

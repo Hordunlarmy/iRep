@@ -37,7 +37,7 @@ return new class () extends Migration {
 			state VARCHAR(255),
 			local_government VARCHAR(255),
 			polling_unit VARCHAR(255),
-			kyc_url VARCHAR(255),
+			kyc JSON DEFAULT NULL,
 			email_verified BOOLEAN DEFAULT FALSE,
 			kyced BOOLEAN DEFAULT FALSE,
 			remember_token VARCHAR(100),

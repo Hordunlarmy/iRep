@@ -72,6 +72,16 @@ class AuthController extends Controller
         $validated['account_type'] = $user->account_type;
         $validated['id'] = $user->id;
 
+        if ($request->hasFile('kyc')) {
+            $kycFiles = $request->file('kyc');
+
+            if (!is_array($kycFiles)) {
+                $kycFiles = [$kycFiles];
+            }
+            $validated['kyc'] = $kycFiles;
+        }
+
+
         $account = $this->accountFactory->insertAccountDetails($validated);
 
         return response()->json(['account_id' => $account->id], 201);

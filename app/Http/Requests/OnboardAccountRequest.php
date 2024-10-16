@@ -24,25 +24,31 @@ class OnboardAccountRequest extends FormRequest
     public function rules()
     {
         $user = Auth::user();
-
         $accountType = DB::table('account_types')
             ->where('id', $user->account_type)
-            ->value('name');
+            ->value('id');
 
-        return [
+        $rules = [
             'name' => 'required|string|max:255',
             'dob' => 'required|date|before:today',
             'gender' => 'required|string|in:male,female,other',
             'state' => 'required|string|max:255',
             'local_government' => 'required|string|max:255',
-            'kyc' => 'required_if:$accountType,representative|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,flv,wmv,3gp,webm|max:20480',
-            'position' => 'required_if:$accountType,representative|string|max:255',
-            'party' => 'required_if:$accountType,representative|string|max:255',
-            'constituency' => 'required_if:$accountType,representative|string|max:255',
-            'social_handles' => 'required_if:$accountType,representative|json',
-        ];
-    }
+            'kyc.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,flv,wmv,3gp,webm|max:20480',
 
+        ];
+
+        // Additional rules for representatives
+        if ($accountType === 2) {
+            $rules['position'] = 'required|string|max:255';
+            $rules['party'] = 'required|string|max:255';
+            $rules['constituency'] = 'required|string|max:255';
+            $rules['social_handles'] = 'required|array';
+            $rules['social_handles.*'] = 'required|string|url';
+        }
+
+        return $rules;
+    }
     /*
     * Custom validation error message
     */
