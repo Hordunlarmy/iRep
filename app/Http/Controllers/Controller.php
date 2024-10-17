@@ -10,6 +10,7 @@ use Database\Factories\AccountFactory;
 use Database\Factories\PostFactory;
 use Database\Factories\CommentFactory;
 use Database\Factories\MessageFactory;
+use Database\Factories\HomePageFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +25,7 @@ abstract class Controller extends BaseController
     protected $postFactory;
     protected $commentFactory;
     protected $messageFactory;
+    protected $homeFactory;
 
     /**
      * Create a new Controller instance and initialize the database connection.
@@ -37,6 +39,7 @@ abstract class Controller extends BaseController
         $this->postFactory = new PostFactory();
         $this->commentFactory = new CommentFactory();
         $this->messageFactory = new MessageFactory();
+        $this->homeFactory = new HomePageFactory();
     }
 
     /**
@@ -58,6 +61,14 @@ abstract class Controller extends BaseController
         ], $statusCode);
     }
 
+    /**
+     * Toggle an action (like, unlike, repost e.t.c) on a post or comment.
+     *
+     * @param  string  $entity
+     * @param  string  $actionType
+     * @param  int  $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function toggleAction($entity, $actionType, $id)
     {
         $this->findEntity($entity, $id);
@@ -73,6 +84,13 @@ abstract class Controller extends BaseController
     }
 
 
+    /**
+     * Find an entity (account, post, comment etc).
+     *
+     * @param  string  $type
+     * @param  int  $id
+     * @return mixed
+     */
     public function findEntity($type, $id)
     {
         if ($type === 'post') {

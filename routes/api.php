@@ -6,6 +6,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\HomePageController;
 use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
@@ -24,8 +25,8 @@ Route::get('/account-types', function () {
     return response()->json($accountTypes, 200);
 });
 
-Route::get('/representatives', [AccountController::class, 'listRepresentatives'])
-    ->name('listRepresentatives')
+Route::get('/representatives', [HomePageController::class, 'index'])
+    ->name('index')
     ->middleware('auth:api', 'activated');
 
 Route::group([

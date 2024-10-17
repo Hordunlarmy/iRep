@@ -86,17 +86,4 @@ class AccountController extends Controller
 
     }
 
-    public function listRepresentatives(Request $request)
-    {
-        {
-            $criteria = $request->only([
-                'search', 'state', 'position', 'local_government', 'sort_by',
-                'sort_order']);
-
-            $representatives = $this->accountFactory->getRepresentatives($criteria);
-
-            return response()->json(AccountResource::collection($representatives));
-
-        }
-    }
 }
