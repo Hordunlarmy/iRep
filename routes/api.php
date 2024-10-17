@@ -24,6 +24,9 @@ Route::get('/account-types', function () {
     return response()->json($accountTypes, 200);
 });
 
+Route::get('/representatives', [AccountController::class, 'listRepresentatives'])
+    ->name('listRepresentatives')
+    ->middleware('auth:api', 'activated');
 
 Route::group([
     'prefix' => 'auth'
@@ -45,6 +48,19 @@ Route::group([
 });
 
 Route::group([
+    'prefix' => 'accounts',
+    'middleware' => ['auth:api', 'activated']
+], function () {
+    Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
+    Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('upload');
+    Route::post('/profile/update', [AccountController::class, 'update'])->name('update');
+    Route::get('/{id}', [AccountController::class, 'show'])->name('show');
+});
+
+
+
+
+Route::group([
     'prefix' => 'posts'
 ], function () {
     Route::get('/', [PostController::class, 'index'])->name('index');
@@ -60,14 +76,6 @@ Route::group([
     Route::post('/{id}/comment', [CommentController::class, 'create'])->name('create');
     Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
 
-});
-
-Route::group([
-    'prefix' => 'accounts'
-], function () {
-    Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
-    Route::get('/representatives', [AccountController::class, 'listRepresentatives']);
-    Route::get('/{id}', [AccountController::class, 'getAccount']);
 });
 
 Route::group([

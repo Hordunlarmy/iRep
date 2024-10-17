@@ -43,17 +43,12 @@ class PostController extends Controller
             $criteria = $request->only(['search', 'filter', 'sort_by', 'sort_order', 'page', 'page_size']);
             $result = $this->postFactory->getPosts($criteria);
 
-            $posts = $result['data'];
-            $total = $result['total'];
-            $currentPage = $result['current_page'];
-            $lastPage = $result['last_page'];
-
             return response()->json([
-            'data' => PostResource::collection($posts),
+            'data' => PostResource::collection($result['data']),
             'meta' => [
-                'total' => (int) $total,
-                'current_page' => (int) $currentPage,
-                'last_page' => (int) $lastPage,
+                'total' => (int) $result['total'],
+                'current_page' => (int) $result['current_page'],
+                'last_page' => (int) $result['last_page'],
                 'page_size' => $criteria['page_size'] ?? 10,
             ],
         ], 200);

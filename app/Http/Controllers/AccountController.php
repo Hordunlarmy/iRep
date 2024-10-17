@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Resources\AccountResource;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\UpdateProfileRequest;
 
 class AccountController extends Controller
 {
@@ -24,7 +25,54 @@ class AccountController extends Controller
 
     }
 
-    public function getAccount($id, Request $request)
+    public function upload(Request $request, $type)
+    {
+        try {
+            $validated = $request->validate([
+                'photo' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
+
+            $accountId = Auth::id();
+
+            if ($type === 'profile') {
+                $field = 'photo_url';
+            } elseif ($type === 'cover') {
+                $field = 'cover_photo_url';
+            } else {
+                return response()->json(['error' => 'Invalid photo type.'], 400);
+            }
+
+            $result = $this->accountFactory->uploadPhoto($field, $accountId, $validated['photo']);
+
+            return response()->json([
+                'photo_url' => $result
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['error' => 'Validation failed.', 'details' => $errors], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Photo upload failed.', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Photo upload failed.'], 500);
+        }
+    }
+
+    public function update(UpdateProfileRequest $request)
+    {
+        $accountId = Auth::id();
+        $validated = $request->validated();
+
+        $result = $this->accountFactory->updateAccount($accountId, $validated);
+
+        if ($result) {
+            return response()->json(['message' => 'Profile updated.'], 200);
+        }
+
+        return response()->json(['message' => 'Profile update failed.'], 400);
+    }
+
+    public function show($id, Request $request)
     {
         if (!is_int($id) && !ctype_digit($id)) {
             return response()->json([

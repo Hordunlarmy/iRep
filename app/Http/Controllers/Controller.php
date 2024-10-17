@@ -82,11 +82,11 @@ abstract class Controller extends BaseController
         } elseif ($type === 'account') {
             $data = $this->accountFactory->getAccount($id);
         } else {
-            return response()->json(['message' => 'Invalid entity type'], 400);
+            abort(400, 'Invalid entity type');
         }
 
         if (!$data) {
-            return response()->json(['message' => "{$type} not found"], 404);
+            abort(404, "{$type} not found");
         }
 
         return $data;

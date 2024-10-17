@@ -17,10 +17,10 @@ class AuthController extends Controller
     {
         try {
             $validated = $request->validate([
-                'account_type' => 'required|integer|exists:account_types,id',
                 'email' => 'required|email|unique:accounts,email|max:255',
                 'password' => 'required|string|min:8',
             ]);
+            $validated['account_type'] = 1;
 
             $account = $this->accountFactory->createAccount($validated);
 
@@ -69,7 +69,6 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $validated = $request->validated();
-        $validated['account_type'] = $user->account_type;
         $validated['id'] = $user->id;
 
         if ($request->hasFile('kyc')) {
@@ -134,7 +133,6 @@ class AuthController extends Controller
                 'name' => $socialUser->getName(),
                 'email' => $socialUser->getEmail(),
                 'photo_url' => $socialUser->getAvatar(),
-                'account_type' => 'social',
             ];
             $user = $this->accountFactory->createAccount($userData);
             $this->accountFactory->setEmailVerified($user->id);

@@ -31,7 +31,7 @@ class AccountFactory
             $account = new Account($this->db, $data);
             $accountId = $account->insertAccount();
 
-            if ($data['account_type'] !== 0) {
+            if ($data['account_type']) {
                 $this->sendVerificationEmail($accountId, $data['email']);
             }
 
@@ -58,16 +58,9 @@ class AccountFactory
 
             $accountId = $this->updateAccount($data['id'], $data);
 
-            if ($data['account_type'] === 1) {
-                (new Citizen($accountId, $data))->insert($this->db);
-            } elseif ($data['account_type'] === 2) {
-                (new Representative($accountId, $data))->insert($this->db);
-            } else {
-                // Do nothing
-            }
             $this->db->commit();
 
-            return new Account($this->db, ['id' => $accountId, 'account_type' => $data['account_type']]);
+            return new Account($this->db, ['id' => $accountId]);
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
@@ -107,10 +100,6 @@ class AccountFactory
 		SELECT
 		a.*,
 		CASE
-		WHEN a.account_type = 1 THEN JSON_OBJECT(
-		'occupation', c.occupation,
-		'location', c.location
-		)
 		WHEN a.account_type = 2 THEN JSON_OBJECT(
 		'position', r.position,
 		'constituency', r.constituency,
@@ -120,7 +109,6 @@ class AccountFactory
 		ELSE NULL
 		END AS account_data
 		FROM accounts a
-		LEFT JOIN citizens c ON a.id = c.account_id AND a.account_type = 1
 		LEFT JOIN representatives r ON a.id = r.account_id AND a.account_type = 2
 		WHERE a.id = ? OR a.email = ?";
 
@@ -128,6 +116,16 @@ class AccountFactory
         $stmt->execute([$identifier, $identifier]);
 
         return $stmt->fetchObject();
+    }
+
+    public function uploadPhoto($field, $accountId, $file)
+    {
+
+        $photo = app('uploadMediaService')->handleMediaFiles([$file]);
+
+        $this->updateAccount($accountId, [$field => $photo[0]]);
+
+        return $photo[0];
     }
 
     protected function sendVerificationEmail($accountId, $email, $name = '')

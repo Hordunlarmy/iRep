@@ -15,7 +15,7 @@ class AccountResource extends JsonResource
     {
         // Handle both object and array data
         $data = is_object($this->resource) ? $this->resource : (object) $this->resource;
-        $accountData = json_decode($data->account_data, true);
+        $accountData = isset($data->account_data) ? json_decode($data->account_data, true) : null;
 
         $responseArray = [
             'id' => $data->id,

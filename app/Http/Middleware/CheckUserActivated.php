@@ -11,13 +11,14 @@ class CheckUserActivated
 {
     public function handle(Request $request, Closure $next)
     {
-        $email = $request->input('email');
-        $account = null;
+        $account = Auth::user();
 
-        if ($email) {
-            $account = DB::table('accounts')->where('email', $email)->first();
-        } else {
-            $account = Auth::user();
+        if (!$account) {
+            $email = $request->input('email');
+
+            if ($email) {
+                $account = DB::table('accounts')->where('email', $email)->first();
+            }
         }
 
         if (!$account) {
