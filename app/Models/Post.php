@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
-use App\Services\MediaHandler;
 
 class Post
 {

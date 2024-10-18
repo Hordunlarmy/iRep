@@ -16,8 +16,6 @@ class HomePageResource extends JsonResource
         // Handle both object and array data
         $data = is_object($this->resource) ? $this->resource : (object) $this->resource;
 
-        \Illuminate\Support\Facades\Log::info('HomePageResource data: ' . json_encode($data));
-
         return [
             'id' => $data->id,
             'account_type' => $data->account_type,

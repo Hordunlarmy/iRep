@@ -9,6 +9,10 @@ class PostResource extends JsonResource
 {
     public function toArray($request)
     {
+        $commentCount = DB::table('comments')
+            ->where('post_id', $this->id)
+            ->count() ?? 0;
+
         $likesCount = DB::table('likes')
             ->where('entity_id', $this->id)
             ->count() ?? 0;
@@ -21,7 +25,9 @@ class PostResource extends JsonResource
             ->where('entity_id', $this->id)
             ->count() ?? 0;
 
-        return [
+        $postType = $this->post_type;
+
+        $responseArray = [
             'id' => $this->id,
             'title' => $this->title,
             'context' => $this->context,
@@ -29,10 +35,21 @@ class PostResource extends JsonResource
             'creator_id' => $this->creator_id,
             'created_at' => $this->created_at,
             'media' => json_decode($this->media, true),
+            'comments' => $commentCount,
             'likes' => $likesCount,
             'reposts' => $repostsCount,
             'bookmarks' => $bookmarksCount,
         ];
+
+        if ($postType === 'petition') {
+            $postData = json_decode($this->post_data);
+
+            if ($postData && isset($postData->signatures) && isset($postData->target_signatures)) {
+                $responseArray['signatures'] = $postData->signatures;
+                $responseArray['target_signatures'] = $postData->target_signatures;
+            }
+        }
+        return $responseArray;
     }
 
     public function toDetailArray($request)
@@ -59,6 +76,10 @@ class PostResource extends JsonResource
 
         if (isset($postData['signatures'])) {
             $responseArray['signatures'] = $postData['signatures'];
+        }
+
+        if (isset($postData['target_signatures'])) {
+            $responseArray['target_signatures'] = $postData['target_signatures'];
         }
 
         if (isset($postData['status'])) {

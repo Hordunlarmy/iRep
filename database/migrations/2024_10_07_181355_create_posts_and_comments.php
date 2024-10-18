@@ -28,6 +28,7 @@ return new class () extends Migration {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			post_id INT NOT NULL,
 			signatures INT DEFAULT 0,
+			target_signatures INT DEFAULT 100,
 			target_representative_id INT NOT NULL,
 			status ENUM('open', 'submitted', 'approved') DEFAULT 'open',
 			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,

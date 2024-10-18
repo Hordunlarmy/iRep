@@ -105,9 +105,9 @@ class PostController extends Controller
         $validatedData = $request->validated();
         $comment = $validatedData['comment'];
 
-        $this->postFactory->insertSignature($id, Auth::id(), $comment);
+        $status = $this->postFactory->insertSignature($id, Auth::id(), $comment);
 
-        return response()->json(['message' => 'success']);
+        return response()->json(['message' => 'success', 'status' => $status]);
     }
 
     public function approveReport($id, CommentRequest $request)

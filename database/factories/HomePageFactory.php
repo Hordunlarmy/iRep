@@ -111,4 +111,54 @@ class homePageFactory
         return $query;
     }
 
+    public function getCommunityPosts($criteria)
+    {
+        $page = $criteria['page'] ?? 1;
+        $pageSize = $criteria['page_size'] ?? 10;
+        $offset = ($page - 1) * $pageSize;
+        $params = [];
+
+        $query = '
+		SELECT p.id, p.title, p.content, p.media_url, p.created_at, a.name, a.photo_url
+		FROM posts p
+		JOIN accounts a ON p.creator_id = a.id
+		WHERE p.target_representative_id IS NULL';
+
+        list($query, $params) = $this->applyFilters($query, $params, $criteria);
+        $query = $this->applySorting($query, $criteria);
+
+        $query .= " LIMIT ? OFFSET ?";
+        $params[] = (int) $pageSize;
+        $params[] = (int) $offset;
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute($params);
+            $posts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Count total records for pagination
+            $countQuery = '
+			SELECT COUNT(*) AS total
+			FROM posts p
+			WHERE p.target_representative_id IS NULL';
+            $countParams = [];
+
+            list($countQuery, $countParams) = $this->applyFilters($countQuery, $countParams, $criteria);
+
+            $totalCountStmt = $this->db->prepare($countQuery);
+            $totalCountStmt->execute($countParams);
+            $totalCount = $totalCountStmt->fetchColumn();
+
+            return [
+                'data' => $posts,
+                'total' => $totalCount,
+                'current_page' => $page,
+                'last_page' => ceil($totalCount / $pageSize),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error fetching community posts: ' . $e->getMessage());
+            return [];
+        }
+    }
+
 }

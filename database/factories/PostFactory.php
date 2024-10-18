@@ -58,6 +58,7 @@ class PostFactory extends CommentFactory
 				WHEN p.post_type = 'petition' THEN JSON_OBJECT(
 					'target_representative_id', pe.target_representative_id,
 					'signatures', pe.signatures,
+					'target_signatures', pe.target_signatures,
 					'status', pe.status
 				)
 				WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
@@ -156,6 +157,7 @@ class PostFactory extends CommentFactory
 		CASE
 		WHEN p.post_type = 'petition' THEN JSON_OBJECT(
 		'target_representative_id', pe.target_representative_id,
+		'target_signatures', pe.target_signatures,
 		'signatures', pe.signatures,
 		'status', pe.status
 		)
@@ -240,16 +242,16 @@ class PostFactory extends CommentFactory
             $this->db->beginTransaction();
 
             $query = "
-			INSERT INTO petition_signatures (post_id, account_id)
-			VALUES (?, ?)";
+		INSERT INTO petition_signatures (post_id, account_id)
+		VALUES (?, ?)";
 
             $stmt = $this->db->prepare($query);
             $stmt->execute([$postId, $accountId]);
 
             $incrementQuery = "
-			UPDATE petitions
-			SET signatures = signatures + 1
-			WHERE post_id = ?";
+		UPDATE petitions
+		SET signatures = signatures + 1
+		WHERE post_id = ?";
 
             $incrementStmt = $this->db->prepare($incrementQuery);
             $incrementStmt->execute([$postId]);
@@ -263,11 +265,41 @@ class PostFactory extends CommentFactory
                 $this->insertComment($data);
             }
 
+            $status = $this->checkAndUpdatePetitionStatus($postId);
+
             $this->db->commit();
+
+            return $status;
         } catch (\PDOException $e) {
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    private function checkAndUpdatePetitionStatus($postId)
+    {
+        $statusQuery = "
+		SELECT signatures, target_signatures, status
+		FROM petitions
+		WHERE post_id = ?";
+
+        $statusStmt = $this->db->prepare($statusQuery);
+        $statusStmt->execute([$postId]);
+        $result = $statusStmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($result['signatures'] >= $result['target_signatures'] && $result['status'] != 'submitted') {
+            $updateStatusQuery = "
+			UPDATE petitions
+			SET status = 'submitted'
+			WHERE post_id = ?";
+
+            $updateStatusStmt = $this->db->prepare($updateStatusQuery);
+            $updateStatusStmt->execute([$postId]);
+
+            $result['status'] = 'submitted';
+        }
+
+        return $result['status'];
     }
 
 }
