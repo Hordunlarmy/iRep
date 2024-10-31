@@ -11,7 +11,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(CitizenSeeder::class);
+        $this->call(PartySeeder::class);
+        $this->call(StateSeeder::class);
+        $this->call(LocalGovernmentSeeder::class);
+        $this->call(PositionSeeder::class);
+        $this->call(DistrictSeeder::class);
+        $this->call(ConstituencySeeder::class);
+        $this->call(AccountSeeder::class);
         $this->call(RepresentativeSeeder::class);
         $this->call(PostSeeder::class);
     }

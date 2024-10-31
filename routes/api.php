@@ -8,6 +8,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HomePageController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return response()->json([
@@ -16,6 +18,8 @@ Route::get('/', function () {
     ]);
 });
 
+
+
 Route::get('/account-types', function () {
     $accountTypes = DB::table('account_types')
         ->select('id', 'name')
@@ -23,6 +27,19 @@ Route::get('/account-types', function () {
         ->get();
 
     return response()->json($accountTypes, 200);
+});
+
+Route::middleware('auth:api')->get('/auth/user', function (Request $request) {
+    $user = Auth::user();
+
+    $response = [
+        'id' => $user->id,
+        'email' => $user->email,
+        'name' => $user->name,
+        'email_verified' => $user->email_verified,
+    ];
+
+    return response()->json($response, 200);
 });
 
 Route::get('/representatives', [HomePageController::class, 'index'])

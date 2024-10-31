@@ -24,10 +24,11 @@ class RepresentativeSeeder extends Seeder
 
             $name = trim($row[0]);
             $state = trim($row[1]);
-            $constituency = trim($row[2]);
+            $district = trim($row[2]);
             $party = trim($row[3]);
             $email = trim($row[4]);
             $phone_number = trim($row[5]);
+            $position = trim($row[6]);
 
             $phone_number = ($phone_number === 'N/A' || empty($phone_number)) ? null : $phone_number;
 
@@ -41,7 +42,10 @@ class RepresentativeSeeder extends Seeder
                 continue;
             }
 
-            $position = trim($row[6]);
+
+            $position_id = DB::table('positions')->where('title', $position)->value('id');
+            $party_id = DB::table('parties')->where('code', $party)->value('id');
+            $state_id = DB::table('states')->where('name', $state)->value('id');
 
             // Insert account data
             $account_id = DB::table('accounts')->insertGetId([
@@ -50,8 +54,8 @@ class RepresentativeSeeder extends Seeder
                 'email' => $email,
                 'phone_number' => $phone_number,
                 'dob' => null,
-                'state' => $state,
-                'local_government' => null,
+                'state_id' => $state_id ?? null,
+                'local_government_id' => null,
                 'polling_unit' => null,
                 'password' => Hash::make('password'),
                 'email_verified' => true,
@@ -62,10 +66,10 @@ class RepresentativeSeeder extends Seeder
 
             // Insert representative data
             DB::table('representatives')->insert([
-                'position' => $position,
-                'constituency' => $constituency,
-                'party' => $party,
-                'bio' => $name . ' is a representative from ' . $constituency,
+                'position_id' => $position_id ?? null,
+                'constituency_id' => $constituency_id ?? null,
+                'party_id' => $party_id ?? null,
+                'bio' => $name . ' is a representative from ' . $district,
                 'account_id' => $account_id,
             ]);
         }
