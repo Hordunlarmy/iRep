@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Replace DB_HOST and DB_PORT in the .env file with SERVICE_HOST and SERVICE_PORT
+# Replace DB_HOST and DB_PORT in the .env file
 sed -i "s/DB_HOST=.*/DB_HOST=database/" .env
 sed -i "s/DB_PORT=.*/DB_PORT=3306/" .env
 

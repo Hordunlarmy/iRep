@@ -101,15 +101,18 @@ class AccountFactory
 		a.*,
 		CASE
 		WHEN a.account_type = 2 THEN JSON_OBJECT(
-		'position', r.position,
-		'constituency', r.constituency,
-		'party', r.party,
+		'position', p.title,
+		'constituency', c.name,
+		'party', pa.name,
 		'bio', r.bio
 		)
 		ELSE NULL
 		END AS account_data
 		FROM accounts a
 		LEFT JOIN representatives r ON a.id = r.account_id AND a.account_type = 2
+		LEFT JOIN positions p ON r.position_id = p.id
+		LEFT JOIN constituencies c ON r.constituency_id = c.id
+		LEFT JOIN parties pa ON r.party_id = pa.id
 		WHERE a.id = ? OR a.email = ?";
 
         $stmt = $this->db->prepare($query);

@@ -124,10 +124,16 @@ class homePageFactory
         $params = [2];
 
         $query = '
-		SELECT a.id, a.name, a.account_type, a.photo_url, a.state,
-		a.local_government, r.position, r.party, r.constituency
+		SELECT a.id, a.name, a.account_type, a.photo_url, s.name AS state,
+		l.name As local_government, p.title AS position , pa.name AS party,
+	   	c.name AS constituency
 		FROM accounts a
 		JOIN representatives r ON r.account_id = a.id
+		LEFT JOIN states s ON a.state_id = s.id
+		LEFT JOIN local_governments l ON a.local_government_id = l.id
+		LEFT JOIN positions p ON r.position_id = p.id
+		LEFT JOIN parties pa ON r.party_id = pa.id
+		LEFT JOIN constituencies c ON r.constituency_id = c.id
 		WHERE a.account_type = ?';
 
         list($query, $params) = $this->applyFilters($query, $params, $criteria, 'representative');

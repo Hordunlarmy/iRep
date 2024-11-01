@@ -3,17 +3,22 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+    container_name: irep
     ports:
       - "80:8000"
     volumes:
       - .:/workspace/irep
+      - ./storage/logs:/workspace/irep/storage/logs
     env_file:
       - .env
     environment:
       DB_HOST: database
       DB_PORT: 3306
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+    networks:
+      - network
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api"]
@@ -24,13 +29,15 @@ services:
 
   database:
     image: mariadb:latest
-    container_name: irep-database
+    container_name: irepDB
     ports:
       - "3309:3306"
     env_file:
       - docker/database.env
     volumes:
-      - irepdata:/var/lib/mysql
+      - dbdata:/var/lib/mysql
+    networks:
+      - network
     restart: always
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
@@ -39,6 +46,40 @@ services:
       start_period: 30s
       timeout: 10s
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+    env_file:
+      - ./docker/elasticsearch.env
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "10"
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 volumes:
-  irepdata:
+  dbdata:
+  esdata:
+
+networks:
+  network:
+    driver: bridge
 
