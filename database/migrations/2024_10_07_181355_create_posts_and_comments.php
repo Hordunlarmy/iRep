@@ -32,7 +32,7 @@ return new class () extends Migration {
 			target_representative_id INT NOT NULL,
 			status ENUM('open', 'submitted', 'approved') DEFAULT 'open',
 			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-			FOREIGN KEY (target_representative_id) REFERENCES representatives(id) ON DELETE CASCADE
+			FOREIGN KEY (target_representative_id) REFERENCES accounts(id) ON DELETE CASCADE
 			)
 			");
 

@@ -7,13 +7,16 @@
     "require": {
         "php": "^8.2",
         "cloudinary-labs/cloudinary-laravel": "^2.2",
-        "elasticsearch/elasticsearch": "^8.15",
+        "guzzlehttp/guzzle": "^7.9",
+        "http-interop/http-factory-guzzle": "^1.0",
         "laravel/framework": "^11.9",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "meilisearch/meilisearch-php": "^1.11",
+        "predis/predis": "^2.0",
         "tymon/jwt-auth": "^2.1"
     },
     "require-dev": {

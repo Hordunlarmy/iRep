@@ -12,6 +12,9 @@ fi
 # Run Laravel migrate and seed database
 php artisan migrate:refresh --seed --force
 
+# Index existing records in the database
+php artisan meilisearch:index-existing
+
 # Set permissions for the storage and bootstrap/cache directories
 chown -R www-data:www-data storage bootstrap/cache
 

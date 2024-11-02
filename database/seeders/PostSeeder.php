@@ -16,7 +16,7 @@ class PostSeeder extends Seeder
                 'context' => 'We need better roads in our community to ensure safety and accessibility.',
                 'media' => json_encode(['https://i.imgur.com/6OiQwEJ.jpeg', 'https://i.imgur.com/cl7CDK6.jpeg']),
                 'creator_id' => 1,
-                'target_representative_id' => 1,
+                'target_representative_id' => 10,
             ],
             [
                 'post_type' => 'petition',
@@ -24,7 +24,7 @@ class PostSeeder extends Seeder
                 'context' => 'Our healthcare system needs urgent reforms to better serve the community.',
                 'media' => json_encode(['https://i.imgur.com/DI5HhNd.jpeg','https://i.imgur.com/SMBmLqX.jpeg' ]),
                 'creator_id' => 2,
-                'target_representative_id' => 2,
+                'target_representative_id' => 11,
             ],
             [
                 'post_type' => 'petition',
@@ -32,7 +32,7 @@ class PostSeeder extends Seeder
                 'context' => 'We urge the government to take action against pollution in our area.',
                 'media' => json_encode(['https://i.imgur.com/vSltOz5.jpeg', 'https://i.imgur.com/fu2EWSt.png']),
                 'creator_id' => 3,
-                'target_representative_id' => 3,
+                'target_representative_id' => 12,
             ],
         ];
 

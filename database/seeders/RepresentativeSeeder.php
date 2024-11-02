@@ -46,6 +46,7 @@ class RepresentativeSeeder extends Seeder
             $position_id = DB::table('positions')->where('title', $position)->value('id');
             $party_id = DB::table('parties')->where('code', $party)->value('id');
             $state_id = DB::table('states')->where('name', $state)->value('id');
+            $district_id = DB::table('districts')->where('name', $district)->value('id');
 
             // Insert account data
             $account_id = DB::table('accounts')->insertGetId([
@@ -68,6 +69,7 @@ class RepresentativeSeeder extends Seeder
             DB::table('representatives')->insert([
                 'position_id' => $position_id ?? null,
                 'constituency_id' => $constituency_id ?? null,
+                'district_id' => $district_id ?? null,
                 'party_id' => $party_id ?? null,
                 'bio' => $name . ' is a representative from ' . $district,
                 'account_id' => $account_id,
