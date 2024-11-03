@@ -5,67 +5,150 @@ namespace Database\Factories;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class homePageFactory
+class homePageFactory extends postFactory
 {
     protected $db;
 
     public function __construct($db = null)
     {
+        parent::__construct();
         $this->db = $db ?: DB::connection()->getPdo();
     }
 
-    public function globalSearch($criteria)
+    public function globalSearch(array $criteria = []): array
     {
+        $query = $criteria['search'] ?? '';
+        $indexes = ['posts', 'accounts', 'representatives'];
         $page = $criteria['page'] ?? 1;
         $pageSize = $criteria['page_size'] ?? 10;
         $offset = ($page - 1) * $pageSize;
-        $searchTerm = $criteria['search'] ?? null;
+        $sortBy = $criteria['sort_by'] ?? 'created_at';
+        $sortOrder = $criteria['sort_order'] ?? 'desc';
+        $filters = $criteria['filters'] ?? [];
 
-        $params = array_fill(0, 6, '%' . $searchTerm . '%');
+        // Define search parameters
+        $searchParams = [
+            'filter' => $this->buildFilters($filters),
+            'limit' => $pageSize,
+            'offset' => $offset,
+            'sort' => ["$sortBy:$sortOrder"],
+            'attributesToRetrieve' => ['*'],
+        ];
 
-        $query = '
-		SELECT p.id AS post_id, p.title, p.content, p.media_url, p.created_at,
-		a.name AS creator_name, a.account_type, a.photo_url AS creator_photo,
-		r.position, r.party, "post" AS type
-		FROM posts p
-		JOIN accounts a ON p.creator_id = a.id
-		LEFT JOIN representatives r ON a.id = r.account_id
-		WHERE (p.title LIKE ? OR p.content LIKE ? OR a.name LIKE ? OR a.email LIKE ? OR r.position LIKE ? OR r.party LIKE ?)
-		LIMIT ? OFFSET ?';
+        $categorizedResults = [];
+        $totalCounts = [];
 
-        $params[] = (int) $pageSize;
-        $params[] = (int) $offset;
+        foreach ($indexes as $indexName) {
+            // Perform search on each index
+            $results = app('meilisearch')->search($indexName, $query, $searchParams);
 
-        try {
-            $stmt = $this->db->prepare($query);
-            $stmt->execute($params);
-            $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $hits = $results['hits'] ?? [];
+            $totalCount = $results['estimatedTotalHits'] ?? 0;
 
-            $countQuery = '
-			SELECT COUNT(*) AS total
-			FROM posts p
-			JOIN accounts a ON p.creator_id = a.id
-			LEFT JOIN representatives r ON a.id = r.account_id
-			WHERE (p.title LIKE ? OR p.content LIKE ? OR a.name LIKE ? OR a.email LIKE ? OR r.position LIKE ? OR r.party LIKE ?)';
-
-            $totalCountStmt = $this->db->prepare($countQuery);
-            $totalCountStmt->execute(array_slice($params, 0, 6));
-            $totalCount = $totalCountStmt->fetchColumn();
-
-            return [
-                'data' => $results,
+            $categorizedResults[$indexName] = [
+                'data' => $hits,
                 'total' => $totalCount,
                 'current_page' => $page,
                 'last_page' => ceil($totalCount / $pageSize),
             ];
+
+            $totalCounts[$indexName] = $totalCount;
+        }
+
+        return [
+            'results' => $categorizedResults,
+            'total_counts' => $totalCounts,
+        ];
+    }
+
+    public function getCommunityPosts(array $criteria = [])
+    {
+        try {
+            $page = $criteria['page'] ?? 1;
+            $pageSize = $criteria['page_size'] ?? 10;
+            $offset = ($page - 1) * $pageSize;
+            $query = $criteria['search'] ?? '';
+            $sortBy = $criteria['sort_by'] ?? 'created_at';
+            $sortOrder = $criteria['sort_order'] ?? 'desc';
+
+            $filters = [
+                'status' => $criteria['status'] ?? null,
+                'category' => $criteria['category'] ?? null,
+                'post_type' => $criteria['post_type'] ?? null,
+            ];
+
+            $searchParams = [
+                'filter' => $this->buildFilters($filters),
+                'limit' => (int) $pageSize,
+                'offset' => (int) $offset,
+                'sort' => ["$sortBy:$sortOrder"],
+                'attributesToRetrieve' => ['*'],
+            ];
+
+            $results = app('meilisearch')->search('posts', $query, $searchParams);
+
+            $totalCount = count($results) ?? 0;
+            $lastPage = ceil($totalCount / $pageSize);
+
+            return [
+                'data' => $results ?? [],
+                'total' => $totalCount,
+                'current_page' => $page,
+                'last_page' => $lastPage,
+    ];
         } catch (\Exception $e) {
-            Log::error('Error executing global search: ' . $e->getMessage());
-            return [];
+            Log::error('Error fetching posts from meillisearch: ' . $e->getMessage());
+            $this->getPostsFromDatabase($criteria);
+        }
+    }
+
+    public function getRepresentatives(array $criteria = [])
+    {
+        try {
+            $page = $criteria['page'] ?? 1;
+            $pageSize = $criteria['page_size'] ?? 10;
+            $offset = ($page - 1) * $pageSize;
+            $query = $criteria['search'] ?? '';
+            $sortBy = $criteria['sort_by'] ?? 'created_at';
+            $sortOrder = $criteria['sort_order'] ?? 'desc';
+
+            $filters = [
+                'account_type' => 'representative',
+                'state' => $criteria['state'] ?? null,
+                'local_government' => $criteria['local_government'] ?? null,
+                'position' => $criteria['position'] ?? null,
+                'constituency' => $criteria['constituency'] ?? null,
+                'party' => $criteria['party'] ?? null,
+                'district' => $criteria['district'] ?? null,
+            ];
+
+            $searchParams = [
+                'filter' => $this->buildFilters($filters),
+                'limit' => (int) $pageSize,
+                'offset' => (int) $offset,
+                'sort' => ["$sortBy:$sortOrder"],
+                'attributesToRetrieve' => ['*'],
+            ];
+
+            $results = app('meilisearch')->search('accounts', $query, $searchParams);
+
+            $totalCount = count($results) ?? 0;
+            $lastPage = ceil($totalCount / $pageSize);
+
+            return [
+                'data' => $results ?? [],
+                'total' => $totalCount,
+                'current_page' => $page,
+                'last_page' => $lastPage,
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error fetching representatives from meillisearch: ' . $e->getMessage());
+            $this->getRepresentativesFromDatabase($criteria);
         }
     }
 
 
-    public function getCommunityPosts($criteria)
+    public function getPostsFromDatabase($criteria)
     {
         $page = $criteria['page'] ?? 1;
         $pageSize = $criteria['page_size'] ?? 10;
@@ -115,8 +198,7 @@ class homePageFactory
         }
     }
 
-
-    public function getRepresentatives($criteria)
+    public function getRepresentativesFromDatabase($criteria)
     {
         $page = $criteria['page'] ?? 1;
         $pageSize = $criteria['page_size'] ?? 10;
@@ -173,6 +255,21 @@ class homePageFactory
             return [];
         }
     }
+
+    private function buildFilters(array $filters): string
+    {
+        $meiliFilters = [];
+        foreach ($filters as $field => $value) {
+            if (is_array($value)) {
+                $meiliFilters[] = "$field IN [" . implode(',', array_map(fn ($v) => "\"$v\"", $value)) . "]";
+            } elseif (!is_null($value)) {
+                $meiliFilters[] = "$field = \"$value\"";
+            }
+        }
+
+        return implode(' AND ', $meiliFilters);
+    }
+
 
     private function applyFilters($query, $params, array $criteria, $context = 'representative')
     {

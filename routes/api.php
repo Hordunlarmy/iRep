@@ -11,24 +11,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/', function () {
-    return response()->json([
-        'message' => 'Pong!',
-        'status' => 'success'
-    ]);
-});
-
-
-
-Route::get('/account-types', function () {
-    $accountTypes = DB::table('account_types')
-        ->select('id', 'name')
-        ->orderBy('id', 'asc')
-        ->get();
-
-    return response()->json($accountTypes, 200);
-});
-
 Route::middleware('auth:api')->get('/auth/user', function (Request $request) {
     $user = Auth::user();
 
@@ -41,10 +23,6 @@ Route::middleware('auth:api')->get('/auth/user', function (Request $request) {
 
     return response()->json($response, 200);
 });
-
-Route::get('/representatives', [HomePageController::class, 'index'])
-    ->name('index')
-    ->middleware('auth:api', 'activated');
 
 Route::group([
     'prefix' => 'auth'
@@ -69,19 +47,18 @@ Route::group([
     'prefix' => 'accounts',
     'middleware' => ['auth:api', 'activated']
 ], function () {
+    Route::get('/representatives', [HomePageController::class, 'repIndex'])->name('repIndex');
     Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
     Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('upload');
     Route::post('/profile/update', [AccountController::class, 'update'])->name('update');
     Route::get('/{id}', [AccountController::class, 'show'])->name('show');
 });
 
-
-
-
 Route::group([
-    'prefix' => 'posts'
+    'prefix' => 'posts',
+    'middleware' => ['auth:api', 'activated']
 ], function () {
-    Route::get('/', [PostController::class, 'index'])->name('index');
+    Route::get('/', [HomePageController::class, 'postsIndex'])->name('postsIndex');
     Route::post('/', [PostController::class, 'create'])->name('create');
     Route::get('/{id}', [PostController::class, 'show'])->name('show');
     Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
@@ -98,7 +75,80 @@ Route::group([
 
 Route::group([
     'prefix' => 'chats',
-    'middleware' => ['auth:api']], function () {
+    'middleware' => ['auth:api', 'activated']], function () {
         Route::post('/send', [ChatController::class, 'send'])->name('send');
         Route::get('/{id}', [ChatController::class, 'index'])->name('index');
     });
+
+Route::get('/', function () {
+    return response()->json([
+        'message' => 'Pong!',
+        'status' => 'success'
+    ]);
+});
+
+Route::get('/account-types', function () {
+    $accountTypes = DB::table('account_types')
+        ->select('id', 'name')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return response()->json($accountTypes, 200);
+});
+
+Route::get('/states', function () {
+    $states = DB::table('states')
+        ->select('id', 'name')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return response()->json($states, 200);
+});
+
+Route::get('/local-governments/{stateId}', function ($stateId) {
+    $localGovernments = DB::table('local_governments')
+        ->select('id', 'name')
+        ->where('state_id', $stateId)
+        ->orderBy('name', 'asc')
+        ->get();
+
+    return response()->json($localGovernments, 200);
+});
+
+Route::get('/positions', function () {
+    $positions = DB::table('positions')
+        ->select('id', 'title')
+        ->orderBy('title', 'asc')
+        ->get();
+
+    return response()->json($positions, 200);
+});
+
+Route::get('/parties', function () {
+    $parties = DB::table('parties')
+        ->select('id', 'name', 'code')
+        ->orderBy('name', 'asc')
+        ->get();
+
+    return response()->json($parties, 200);
+});
+
+Route::get('/constituencies/{stateId}', function ($stateId) {
+    $constituencies = DB::table('constituencies')
+        ->select('id', 'name')
+        ->where('state_id', $stateId)
+        ->orderBy('name', 'asc')
+        ->get();
+
+    return response()->json($constituencies, 200);
+});
+
+Route::get('/districts/{stateId}', function ($stateId) {
+    $districts = DB::table('districts')
+        ->select('id', 'name')
+        ->where('state_id', $stateId)
+        ->orderBy('name', 'asc')
+        ->get();
+
+    return response()->json($districts, 200);
+});

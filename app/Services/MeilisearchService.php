@@ -14,24 +14,33 @@ class MeilisearchService
     }
 
     // Indexing data using raw SQL
-    public function indexData(string $indexName, array $data): void
-    {
+    public function indexData(
+        string $indexName,
+        array $data,
+        array $sortableAttributes = [],
+        array $filterableAttributes = []
+    ): int {
         // Filter out null values from the data
-        $filteredData = array_map(function ($item) {
-            return array_filter($item, function ($value) {
-                return !is_null($value);
-            });
-        }, $data);
+        $filteredData = app('utils')->filterNullValues($data);
 
         $index = $this->client->index($indexName);
+        if (!empty($sortableAttributes)) {
+            $index->updateSortableAttributes($sortableAttributes);
+        }
+        if (!empty($filterableAttributes)) {
+            $index->updateFilterableAttributes($filterableAttributes);
+        }
+
         $index->addDocuments($filteredData);
+
+        return count($filteredData);
     }
 
     // Search data in Meilisearch
-    public function search(string $indexName, string $query, array $filters = []): array
+    public function search(string $indexName, string $query = '', array $options = []): array
     {
         $index = $this->client->index($indexName);
-        return $index->search($query, ['filter' => $filters])->getHits();
+        return $index->search($query, $options)->getHits();
     }
 
     public function clearAllIndexes(): void

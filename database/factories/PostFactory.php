@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Post;
 use App\Models\Petition;
 use App\Models\EyeWitnessReport;
+use Illuminate\Support\Facades\Log;
 
 class PostFactory extends CommentFactory
 {
@@ -21,6 +22,7 @@ class PostFactory extends CommentFactory
             $this->db->beginTransaction();
 
             $post = new Post($this->db, $data);
+
             $postId = $post->insertPost();
 
             if ($data['post_type'] === 'petition') {
@@ -30,13 +32,89 @@ class PostFactory extends CommentFactory
             }
 
             $this->db->commit();
-
             return $postId;
+
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
         }
     }
+
+    public function indexPost($postId)
+    {
+        try {
+            $fetchedPost = $this->getPost($postId);
+            $postData = json_decode($fetchedPost->post_data, true);
+
+            $dataToIndex = [
+                'id' => $fetchedPost->id,
+                'title' => $fetchedPost->title,
+                'context' => $fetchedPost->context,
+                'media' => $fetchedPost->media,
+                'post_type' => $fetchedPost->post_type,
+                'author' => $fetchedPost->author,
+                'target_representative' => $postData['target_representative'] ?? null,
+                'status' => $postData['status'] ?? null,
+                'signatures' => $postData['signatures'] ?? null,
+                'target_signatures' => $postData['target_signatures'] ?? null,
+                'category' => $postData['category'] ?? null,
+                'created_at' => $fetchedPost->created_at,
+
+            ];
+
+            $sortableAttributes = ['created_at', 'title', 'post_type'];
+            $filterableAttributes = ['status', 'category', 'post_type'];
+
+            $total = app('meilisearch')->indexData(
+                'posts',
+                [$dataToIndex],
+                $sortableAttributes,
+                $filterableAttributes
+            );
+            Log::info($total . ' Post Indexed');
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+    }
+
+    public function getPost($postId)
+    {
+        $query = "
+		SELECT
+		p.id,
+		p.title,
+		p.context,
+		p.media,
+		p.post_type,
+		a.name AS author,
+		p.created_at,
+		CASE
+		WHEN p.post_type = 'petition' THEN JSON_OBJECT(
+		'target_representative', rep.name,
+		'target_signatures', pe.target_signatures,
+		'signatures', pe.signatures,
+		'status', pe.status
+		)
+		WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
+		'approvals', ew.approvals,
+		'category', ew.category
+		)
+		END AS post_data
+		FROM posts p
+		LEFT JOIN petitions pe ON p.id = pe.post_id
+		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
+		LEFT JOIN accounts a ON p.creator_id = a.id
+		LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
+		WHERE p.id = ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$postId]);
+
+        return $stmt->fetchObject();
+    }
+
 
     public function getPosts(array $criteria = [])
     {
@@ -52,11 +130,11 @@ class PostFactory extends CommentFactory
 			p.context,
 			p.media,
 			p.post_type,
-			p.creator_id,
+			a.name AS author,
 			p.created_at,
 			CASE
 				WHEN p.post_type = 'petition' THEN JSON_OBJECT(
-					'target_representative_id', pe.target_representative_id,
+					'target_representative', rep.name,
 					'signatures', pe.signatures,
 					'target_signatures', pe.target_signatures,
 					'status', pe.status
@@ -69,6 +147,8 @@ class PostFactory extends CommentFactory
 		FROM posts p
 		LEFT JOIN petitions pe ON p.id = pe.post_id
 		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
+		LEFT JOIN accounts a ON p.creator_id = a.id
+		LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
 		WHERE 1=1";
 
         list($query, $params) = $this->applyFilters($query, $params, $criteria);
@@ -143,39 +223,6 @@ class PostFactory extends CommentFactory
         return $query;
     }
 
-    public function getPost($postId)
-    {
-        $query = "
-		SELECT
-		p.id,
-		p.title,
-		p.context,
-		p.media,
-		p.post_type,
-		p.creator_id,
-		p.created_at,
-		CASE
-		WHEN p.post_type = 'petition' THEN JSON_OBJECT(
-		'target_representative_id', pe.target_representative_id,
-		'target_signatures', pe.target_signatures,
-		'signatures', pe.signatures,
-		'status', pe.status
-		)
-		WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
-		'approvals', ew.approvals,
-		'category', ew.category
-		)
-		END AS post_data
-		FROM posts p
-		LEFT JOIN petitions pe ON p.id = pe.post_id
-		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
-		WHERE p.id = ?";
-
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$postId]);
-
-        return $stmt->fetchObject();
-    }
 
     public function hasUserSigned($postId, $accountId)
     {

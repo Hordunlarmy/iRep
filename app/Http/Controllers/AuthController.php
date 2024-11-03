@@ -23,6 +23,7 @@ class AuthController extends Controller
             $validated['account_type'] = 1;
 
             $account = $this->accountFactory->createAccount($validated);
+            $this->accountFactory->indexAccount($account->id);
 
             return response()->json([
                 'account_id' => $account->id,
@@ -82,6 +83,7 @@ class AuthController extends Controller
 
 
         $account = $this->accountFactory->insertAccountDetails($validated);
+        $this->accountFactory->indexAccount($account->id);
 
         return response()->json(['account_id' => $account->id], 201);
 

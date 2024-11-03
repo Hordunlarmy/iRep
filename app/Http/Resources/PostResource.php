@@ -9,40 +9,40 @@ class PostResource extends JsonResource
 {
     public function toArray($request)
     {
+        $data = is_object($this->resource) ? $this->resource : (object) $this->resource;
+        $postData = property_exists($data, 'post_data') ? json_decode($data->post_data) : null;
+
         $commentCount = DB::table('comments')
-            ->where('post_id', $this->id)
+            ->where('post_id', $data->id)
             ->count() ?? 0;
 
         $likesCount = DB::table('likes')
-            ->where('entity_id', $this->id)
+            ->where('entity_id', $data->id)
             ->count() ?? 0;
 
         $repostsCount = DB::table('reposts')
-            ->where('entity_id', $this->id)
+            ->where('entity_id', $data->id)
             ->count() ?? 0;
 
         $bookmarksCount = DB::table('bookmarks')
-            ->where('entity_id', $this->id)
+            ->where('entity_id', $data->id)
             ->count() ?? 0;
 
-        $postType = $this->post_type;
-
         $responseArray = [
-            'id' => $this->id,
-            'title' => $this->title,
-            'context' => $this->context,
-            'post_type' => $this->post_type,
-            'creator_id' => $this->creator_id,
-            'created_at' => $this->created_at,
-            'media' => json_decode($this->media, true),
+            'id' => $data->id,
+            'title' => $data->title,
+            'context' => $data->context,
+            'post_type' => $data->post_type,
+            'author' => $data->author,
+            'created_at' => $data->created_at,
+            'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
             'comments' => $commentCount,
             'likes' => $likesCount,
             'reposts' => $repostsCount,
             'bookmarks' => $bookmarksCount,
         ];
 
-        if ($postType === 'petition') {
-            $postData = json_decode($this->post_data);
+        if ($data->post_type === 'petition') {
 
             if ($postData && isset($postData->signatures) && isset($postData->target_signatures)) {
                 $responseArray['signatures'] = $postData->signatures;
@@ -70,8 +70,8 @@ class PostResource extends JsonResource
             $responseArray['category'] = $postData['category'];
         }
 
-        if (isset($postData['target_representative_id'])) {
-            $responseArray['target_representative_id'] = $postData['target_representative_id'];
+        if (isset($postData['target_representative'])) {
+            $responseArray['target_representative'] = $postData['target_representative'];
         }
 
         if (isset($postData['signatures'])) {

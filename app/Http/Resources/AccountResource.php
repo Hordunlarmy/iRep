@@ -10,7 +10,7 @@ class AccountResource extends JsonResource
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
-     */
+*/
     public function toArray($request)
     {
         // Handle both object and array data

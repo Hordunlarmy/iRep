@@ -3,8 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Account;
-use App\Models\Citizen;
-use App\Models\Representative;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -42,6 +40,80 @@ class AccountFactory
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    public function indexAccount($accountId)
+    {
+        try {
+            $fetchedAccount = $this->getAccount($accountId);
+            $accountData = json_decode($fetchedAccount->account_data, true);
+
+            $dataToIndex = [
+                'id' => $fetchedAccount->id,
+                'account_type' => $fetchedAccount->account_type,
+                'photo_url' => $fetchedAccount->photo_url,
+                'name' => $fetchedAccount->name,
+                'state' => $fetchedAccount->state,
+                'local_government' => $fetchedAccount->local_government,
+                'position' => $accountData['position'] ?? null,
+                'constituency' => $accountData['constituency'] ?? null,
+                'party' => $accountData['party'] ?? null,
+                'district' => $accountData['district'] ?? null,
+                'created_at' => $fetchedAccount->created_at,
+
+            ];
+
+            $sortableAttributes = ['created_at', 'name', 'account_type'];
+            $filterableAttributes = [
+                'account_type', 'position', 'constituency', 'party',
+                'district', 'state', 'local_government'
+            ];
+
+            $total = app('meilisearch')->indexData(
+                'accounts',
+                [$dataToIndex],
+                $sortableAttributes,
+                $filterableAttributes
+            );
+            Log::info($total . ' Account Indexed');
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+    }
+
+    public function getAccount($identifier)
+    {
+        $query = "
+        SELECT
+            a.id, a.name, at.name AS account_type, a.photo_url, a.location, a.password,
+            s.name AS state, lg.name AS local_government, a.created_at,
+            CASE
+                WHEN a.account_type = 2 THEN JSON_OBJECT(
+                    'position', p.title,
+                    'constituency', c.name,
+                    'party', pa.name,
+                    'district', d.name,
+                    'bio', r.bio
+                )
+                ELSE NULL
+            END AS account_data
+        FROM accounts a
+        LEFT JOIN representatives r ON a.id = r.account_id AND a.account_type = 2
+        LEFT JOIN states s ON a.state_id = s.id
+        LEFT JOIN local_governments lg ON a.local_government_id = lg.id
+        LEFT JOIN positions p ON r.position_id = p.id
+        LEFT JOIN constituencies c ON r.constituency_id = c.id
+        LEFT JOIN parties pa ON r.party_id = pa.id
+        LEFT JOIN districts d ON r.district_id = d.id
+        LEFT JOIN account_types at ON a.account_type = at.id
+        WHERE a.id = ? OR a.email = ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$identifier, $identifier]);
+
+        return $stmt->fetchObject();
     }
 
     public function insertAccountDetails($data)
@@ -94,32 +166,6 @@ class AccountFactory
         return $accountId;
     }
 
-    public function getAccount($identifier)
-    {
-        $query = "
-		SELECT
-		a.*,
-		CASE
-		WHEN a.account_type = 2 THEN JSON_OBJECT(
-		'position', p.title,
-		'constituency', c.name,
-		'party', pa.name,
-		'bio', r.bio
-		)
-		ELSE NULL
-		END AS account_data
-		FROM accounts a
-		LEFT JOIN representatives r ON a.id = r.account_id AND a.account_type = 2
-		LEFT JOIN positions p ON r.position_id = p.id
-		LEFT JOIN constituencies c ON r.constituency_id = c.id
-		LEFT JOIN parties pa ON r.party_id = pa.id
-		WHERE a.id = ? OR a.email = ?";
-
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$identifier, $identifier]);
-
-        return $stmt->fetchObject();
-    }
 
     public function uploadPhoto($field, $accountId, $file)
     {

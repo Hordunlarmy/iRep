@@ -30,30 +30,12 @@ class PostController extends Controller
             }
 
             $postId = $this->postFactory->createPost($validatedData);
+            $this->postFactory->indexPost($postId);
+
             return response()->json(['post_id' => $postId], 201);
+
         } catch (\Exception $e) {
             return response()->json(['error' => 'Post creation failed ' . $e->getMessage()], 500);
-        }
-    }
-
-    public function index(Request $request)
-    {
-        try {
-
-            $criteria = $request->only(['search', 'filter', 'sort_by', 'sort_order', 'page', 'page_size']);
-            $result = $this->postFactory->getPosts($criteria);
-
-            return response()->json([
-            'data' => PostResource::collection($result['data']),
-            'meta' => [
-                'total' => (int) $result['total'],
-                'current_page' => (int) $result['current_page'],
-                'last_page' => (int) $result['last_page'],
-                'page_size' => $criteria['page_size'] ?? 10,
-            ],
-        ], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch posts ' . $e->getMessage()], 500);
         }
     }
 

@@ -11,8 +11,6 @@ class Petition
 
     public function __construct($postId, $data)
     {
-        \Log::info("post_data", $data);
-
         $this->postId = $postId;
         foreach ($data as $key => $value) {
             switch ($key) {

@@ -33,10 +33,10 @@ class IndexExistingData extends Command
     {
         try {
             $accountData = DB::select("
-				SELECT a.id, a.name, at.name AS account_type, a.location,
+				SELECT a.id, a.name, a.photo_url, at.name AS account_type, a.location,
 					s.name as state, lg.name as local_government,
 					d.name as district, c.name as constituency,
-					pt.name as party, p.title as position
+					pt.name as party, p.title as position, a.created_at
 				FROM accounts a
 				LEFT JOIN representatives r ON a.id = r.account_id
 				LEFT JOIN states s ON a.state_id = s.id
@@ -50,12 +50,22 @@ class IndexExistingData extends Command
 
             // Convert data to an array format Meilisearch accepts
             $accountDataArray = json_decode(json_encode($accountData), true);
+            $sortableAttributes = ['created_at', 'name', 'account_type'];
+            $filterableAttributes = [
+                'account_type', 'position', 'constituency', 'party',
+                'district', 'state', 'local_government'
+            ];
 
             // Index account data in Meilisearch
-            $this->meilisearch->indexData('accounts', $accountDataArray);
+            $total = $this->meilisearch->indexData(
+                'accounts',
+                $accountDataArray,
+                $sortableAttributes,
+                $filterableAttributes
+            );
 
             // Log the number of indexed records
-            $this->info(count($accountDataArray) . ' accounts indexed successfully.');
+            $this->info($total . ' accounts indexed successfully.');
         } catch (\Exception $e) {
             $this->error('Failed to index accounts: ' . $e->getMessage());
         }
@@ -69,10 +79,12 @@ class IndexExistingData extends Command
         // Fetch posts data from the database
         try {
             $postsData = DB::select("
-				SELECT p.id, p.title, p.context, p.post_type,
+				SELECT p.id, p.title, p.context, p.post_type, p.media,
 				a.name AS author,
 				rep.name AS target_representative,
 				pe.status,
+				pe.signatures,
+				pe.target_signatures,
 				ewr.category,
 				p.created_at
 				FROM posts p
@@ -83,10 +95,17 @@ class IndexExistingData extends Command
 			");
 
             $postsDataArray = json_decode(json_encode($postsData), true);
+            $sortableAttributes = ['created_at', 'title', 'post_type'];
+            $filterableAttributes = ['status', 'category', 'post_type'];
 
-            $this->meilisearch->indexData('posts', $postsDataArray);
+            $total = $this->meilisearch->indexData(
+                'posts',
+                $postsDataArray,
+                $sortableAttributes,
+                $filterableAttributes
+            );
 
-            $this->info(count($postsDataArray). ' Posts indexed successfully.');
+            $this->info($total . ' Posts indexed successfully.');
 
         } catch (\Exception $e) {
             $this->error('Failed to index posts: ' . $e->getMessage());
