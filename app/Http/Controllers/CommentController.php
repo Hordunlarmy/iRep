@@ -9,13 +9,14 @@ use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
-    public function create($id, CommentRequest $request)
+    public function create(CommentRequest $request, $postId, $commentId = null)
     {
         try {
             $validatedData = $request->validated();
-            $validatedData['postId'] = $id;
+
+            $validatedData['postId'] = $postId;
             $validatedData['accountId'] = Auth::id();
-            $validatedData['parentId'] = $validatedData['parent_id'] ?? null;
+            $validatedData['parentId'] = $commentId;
 
             $commentId = $this->commentFactory->insertComment($validatedData);
 
@@ -35,7 +36,7 @@ class CommentController extends Controller
             ], 404);
         }
 
-        return response()->json($comment);
+        return response()->json(new CommentResource($comment));
     }
 
     public function index()

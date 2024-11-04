@@ -36,7 +36,7 @@ class CommentFactory
         $query = "
 		SELECT *
 		FROM comments
-		WHERE comment_id = ?";
+		WHERE id = ?";
 
         $stmt = $this->db->prepare($query);
         $stmt->execute([$id]);

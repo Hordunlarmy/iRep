@@ -53,9 +53,9 @@ Route::group([
     Route::get('/representatives', [HomePageController::class, 'repIndex'])->name('repIndex');
     Route::post('/representatives/apply', [AccountController::class, 'applyForRep'])->name('applyForRep');
     Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
-    Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('upload');
-    Route::post('/profile/update', [AccountController::class, 'update'])->name('update');
-    Route::get('/{id}', [AccountController::class, 'show'])->name('show');
+    Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('account.upload');
+    Route::post('/profile/update', [AccountController::class, 'update'])->name('account.update');
+    Route::get('/{id}', [AccountController::class, 'show'])->name('account.show');
 });
 
 Route::group([
@@ -63,16 +63,16 @@ Route::group([
     'middleware' => ['auth:api', 'activated']
 ], function () {
     Route::get('/', [HomePageController::class, 'postsIndex'])->name('postsIndex');
-    Route::post('/', [PostController::class, 'create'])->name('create');
-    Route::get('/{id}', [PostController::class, 'show'])->name('show');
+    Route::post('/', [PostController::class, 'create'])->name('post.create');
+    Route::get('/{id}', [PostController::class, 'show'])->name('post.show');
     Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
     Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
-    Route::post('{id}/like', [PostController::class, 'like'])->name('like');
-    Route::post('{id}/repost', [PostController::class, 'repost'])->name('repost');
-    Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('bookmark');
-    Route::get('/{id}/share', [PostController::class, 'share'])->name('share');
+    Route::post('{id}/like', [PostController::class, 'like'])->name('post.like');
+    Route::post('{id}/repost', [PostController::class, 'repost'])->name('post.repost');
+    Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('post.bookmark');
+    Route::get('/{id}/share', [PostController::class, 'share'])->name('post.share');
 
-    Route::post('/{id}/comment', [CommentController::class, 'create'])->name('create');
+    Route::post('/{postId}/comment/{commentId?}', [CommentController::class, 'create'])->name('comment.create');
     Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
 
 });
@@ -81,14 +81,17 @@ Route::group([
     'prefix' => 'comments',
     'middleware' => ['auth:api', 'activated']
 ], function () {
-    Route::get('/', [CommentController::class, 'index'])->name('index');
+    Route::get('/', [CommentController::class, 'index'])->name('comment.index');
+    Route::post('/', [CommentController::class, 'create'])->name('parentComment.create');
+    Route::get('/{id}', [CommentController::class, 'show'])->name('comment.show');
+    Route::post('/{id}/like', [CommentController::class, 'like'])->name('comment.like');
 });
 
 Route::group([
     'prefix' => 'chats',
     'middleware' => ['auth:api', 'activated']], function () {
-        Route::post('/send', [ChatController::class, 'send'])->name('send');
-        Route::get('/{id}', [ChatController::class, 'index'])->name('index');
+        Route::post('/send', [ChatController::class, 'send'])->name('chat.send');
+        Route::get('/{id}', [ChatController::class, 'index'])->name('chat.index');
     });
 
 Route::get('/', function () {
