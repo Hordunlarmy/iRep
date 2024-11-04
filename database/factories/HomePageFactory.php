@@ -18,7 +18,11 @@ class homePageFactory extends postFactory
     public function globalSearch(array $criteria = []): array
     {
         $query = $criteria['search'] ?? '';
-        $indexes = ['posts', 'accounts', 'representatives'];
+        if (empty($query)) {
+            return [];
+        };
+
+        $indexes = ['posts', 'accounts'];
         $page = $criteria['page'] ?? 1;
         $pageSize = $criteria['page_size'] ?? 10;
         $offset = ($page - 1) * $pageSize;
@@ -26,39 +30,42 @@ class homePageFactory extends postFactory
         $sortOrder = $criteria['sort_order'] ?? 'desc';
         $filters = $criteria['filters'] ?? [];
 
-        // Define search parameters
         $searchParams = [
             'filter' => $this->buildFilters($filters),
-            'limit' => $pageSize,
-            'offset' => $offset,
+            'limit' => (int) $pageSize,
+            'offset' => (int) $offset,
             'sort' => ["$sortBy:$sortOrder"],
             'attributesToRetrieve' => ['*'],
         ];
 
         $categorizedResults = [];
-        $totalCounts = [];
 
         foreach ($indexes as $indexName) {
-            // Perform search on each index
             $results = app('meilisearch')->search($indexName, $query, $searchParams);
-
             $hits = $results['hits'] ?? [];
-            $totalCount = $results['estimatedTotalHits'] ?? 0;
+            $totalCount = $results['nbHits'] ?? 0;
+
+            foreach ($hits as &$hit) {
+                if ($indexName === 'accounts' && isset($hit['photo_url'])) {
+                    $hit['photo_url'] = json_decode($hit['photo_url'], true);
+                }
+                if ($indexName === 'posts' && isset($hit['media'])) {
+                    $hit['media'] = json_decode($hit['media'], true);
+                }
+            }
 
             $categorizedResults[$indexName] = [
                 'data' => $hits,
-                'total' => $totalCount,
-                'current_page' => $page,
-                'last_page' => ceil($totalCount / $pageSize),
+                'meta' => [
+                    'total' => (int) $totalCount,
+                    'current_page' => (int) $page,
+                    'last_page' => (int) ceil($totalCount / $pageSize),
+                    'page_size' => (int) $pageSize,
+                ],
             ];
-
-            $totalCounts[$indexName] = $totalCount;
         }
 
-        return [
-            'results' => $categorizedResults,
-            'total_counts' => $totalCounts,
-        ];
+        return $categorizedResults;
     }
 
     public function getCommunityPosts(array $criteria = [])
@@ -87,18 +94,18 @@ class homePageFactory extends postFactory
 
             $results = app('meilisearch')->search('posts', $query, $searchParams);
 
-            $totalCount = count($results) ?? 0;
+            $totalCount = $results['nbHits'] ?? 0;
             $lastPage = ceil($totalCount / $pageSize);
 
             return [
-                'data' => $results ?? [],
+                'data' => $results['hits'] ?? [],
                 'total' => $totalCount,
                 'current_page' => $page,
                 'last_page' => $lastPage,
-    ];
+            ];
         } catch (\Exception $e) {
             Log::error('Error fetching posts from meillisearch: ' . $e->getMessage());
-            $this->getPostsFromDatabase($criteria);
+            $this->getPosts($criteria);
         }
     }
 
@@ -132,11 +139,11 @@ class homePageFactory extends postFactory
 
             $results = app('meilisearch')->search('accounts', $query, $searchParams);
 
-            $totalCount = count($results) ?? 0;
+            $totalCount = $results['nbHits'] ?? 0;
             $lastPage = ceil($totalCount / $pageSize);
 
             return [
-                'data' => $results ?? [],
+                'data' => $results['hits'] ?? [],
                 'total' => $totalCount,
                 'current_page' => $page,
                 'last_page' => $lastPage,
@@ -144,57 +151,6 @@ class homePageFactory extends postFactory
         } catch (\Exception $e) {
             Log::error('Error fetching representatives from meillisearch: ' . $e->getMessage());
             $this->getRepresentativesFromDatabase($criteria);
-        }
-    }
-
-
-    public function getPostsFromDatabase($criteria)
-    {
-        $page = $criteria['page'] ?? 1;
-        $pageSize = $criteria['page_size'] ?? 10;
-        $offset = ($page - 1) * $pageSize;
-        $params = [];
-
-        $query = '
-		SELECT p.id, p.title, p.content, p.media_url, p.created_at, a.name, a.photo_url
-		FROM posts p
-		JOIN accounts a ON p.creator_id = a.id
-		WHERE p.target_representative_id IS NULL';
-
-        list($query, $params) = $this->applyFilters($query, $params, $criteria, 'post');
-        $query = $this->applySorting($query, $criteria);
-
-        $query .= " LIMIT ? OFFSET ?";
-        $params[] = (int) $pageSize;
-        $params[] = (int) $offset;
-
-        try {
-            $stmt = $this->db->prepare($query);
-            $stmt->execute($params);
-            $posts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            // Count total records for pagination
-            $countQuery = '
-			SELECT COUNT(*) AS total
-			FROM posts p
-			WHERE p.target_representative_id IS NULL';
-            $countParams = [];
-
-            list($countQuery, $countParams) = $this->applyFilters($countQuery, $countParams, $criteria);
-
-            $totalCountStmt = $this->db->prepare($countQuery);
-            $totalCountStmt->execute($countParams);
-            $totalCount = $totalCountStmt->fetchColumn();
-
-            return [
-                'data' => $posts,
-                'total' => $totalCount,
-                'current_page' => $page,
-                'last_page' => ceil($totalCount / $pageSize),
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error fetching community posts: ' . $e->getMessage());
-            return [];
         }
     }
 

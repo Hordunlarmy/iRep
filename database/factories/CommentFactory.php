@@ -44,6 +44,19 @@ class commentFactory
         return $stmt->fetch();
     }
 
+    public function getCommentsByUser($accountId)
+    {
+        $query = "
+		SELECT *
+		FROM comments
+		WHERE account_id = ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$accountId]);
+
+        return $stmt->fetchAll();
+    }
+
     public function toggleAction($table, $postId, $accountId)
     {
         $status = null;

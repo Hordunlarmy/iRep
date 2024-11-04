@@ -58,7 +58,7 @@ class RepresentativeSeeder extends Seeder
                 'state_id' => $state_id ?? null,
                 'local_government_id' => null,
                 'polling_unit' => null,
-                'password' => Hash::make('password'),
+                'password' => Hash::make('password456'),
                 'email_verified' => true,
                 'account_type' => 2,
                 'created_at' => now(),

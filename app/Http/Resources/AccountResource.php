@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 
 class AccountResource extends JsonResource
 {
@@ -20,16 +21,16 @@ class AccountResource extends JsonResource
         $responseArray = [
             'id' => $data->id,
             'account_type' => $data->account_type,
-            'photo_url' => $data->photo_url,
-            'cover_photo_url' => $data->cover_photo_url,
-            'name' => $data->name,
-            'phone_number' => $data->phone_number,
-            'email' => $data->email,
-            'gender' => $data->gender,
-            'dob' => $data->dob,
-            'state' => $data->state,
-            'local_government' => $data->local_government,
-            'polling_unit' => $data->polling_unit,
+            'photo_url' => $data->photo_url ?? null,
+            'cover_photo_url' => $data->cover_photo_url ?? null,
+            'name' => $data->name ?? null,
+            'phone_number' => $data->phone_number ?? null,
+            'email' => $data->email ?? null,
+            'gender' => $data->gender ?? null,
+            'dob' => $data->dob ?? null,
+            'state' => $data->state ?? null,
+            'local_government' => $data->local_government ?? null,
+            'polling_unit' => $data->polling_unit ?? null,
             'created_at' => $data->created_at,
         ];
 
@@ -53,6 +54,7 @@ class AccountResource extends JsonResource
             $responseArray['party'] = $accountData['party'];
         }
 
+
         return $responseArray;
 
     }
@@ -62,24 +64,29 @@ class AccountResource extends JsonResource
         $responseArray = $this->toArray($request);
 
         $profileArray = [
-            'id' => $responseArray['id'],
             'account_type' => $responseArray['account_type'],
-            'photo_url' => $responseArray['photo_url'],
-            'cover_photo_url' => $responseArray['cover_photo_url'],
-            'name' => $responseArray['name'],
-            'email' => $responseArray['email'],
+            'photo_url' => $responseArray['photo_url'] ?? null,
+            'cover_photo_url' => $responseArray['cover_photo_url'] ?? null,
+            'name' => $responseArray['name'] ?? null,
+            'email' => $responseArray['email'] ?? null,
         ];
 
         $request->merge(['filter' => 'petition']);
         $petitionResponse = \app('App\Http\Controllers\PostController')->getUserPosts($request);
         $petition = $petitionResponse->original['data'] ?? $petitionResponse;
 
-        $request->merge(['filter' => 'representative']);
+        $request->merge(['filter' => 'eyewitness']);
         $postResponse = \app('App\Http\Controllers\PostController')->getUserPosts($request);
         $post = $postResponse->original['data'] ?? $postResponse;
 
+        $repliesResponse = \app('App\Http\Controllers\CommentController')->index($request);
+        $replies = $repliesResponse->original ?? $repliesResponse;
+
+
         $profileArray['petition'] = $petition;
         $profileArray['post'] = $post;
+        $profileArray['replies'] = $replies;
+        $profileArray['bookmarks'] = [];
 
         return $profileArray;
     }

@@ -40,7 +40,10 @@ class MeilisearchService
     public function search(string $indexName, string $query = '', array $options = []): array
     {
         $index = $this->client->index($indexName);
-        return $index->search($query, $options)->getHits();
+        $response = $index->search($query, $options)->getRaw();
+
+        return $response;
+
     }
 
     public function clearAllIndexes(): void

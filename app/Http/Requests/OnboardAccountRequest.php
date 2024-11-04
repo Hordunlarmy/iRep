@@ -26,8 +26,8 @@ class OnboardAccountRequest extends FormRequest
             'name' => 'required|string|max:255',
             'dob' => 'required|date|before:today',
             'gender' => 'required|string|in:male,female,other',
-            'state' => 'required|string|max:255',
-            'local_government' => 'required|string|max:255',
+            'state_id' => 'required|exists:states,id',
+            'local_government_id' => 'required|exists:local_governments,id',
             'kyc.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,flv,wmv,3gp,webm|max:20480',
         ];
 

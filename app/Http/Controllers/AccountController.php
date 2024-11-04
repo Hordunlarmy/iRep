@@ -7,6 +7,7 @@ use App\Http\Resources\AccountResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\ApplyForRepRequest;
 
 class AccountController extends Controller
 {
@@ -70,6 +71,30 @@ class AccountController extends Controller
         }
 
         return response()->json(['message' => 'Profile update failed.'], 400);
+    }
+
+    public function applyForRep(ApplyForRepRequest $request)
+    {
+        $validated = $request->validated();
+        $validated['id'] = Auth::id();
+
+        if ($request->hasFile('proof_of_office')) {
+            $pofFiles = $request->file('proof_of_office');
+            $validated['proof_of_office'] = is_array($pofFiles) ? $pofFiles : [$pofFiles];
+        } else {
+            $validated['proof_of_office'] = [];
+        }
+
+        $validated['social_handles'] = $request->input('social_handles', []);
+
+        $result = $this->accountFactory->insertRepresentativeDetails($validated);
+
+        if ($result) {
+            $this->accountFactory->indexAccount($result->id);
+            return response()->json(['message' => 'Success.'], 200);
+        }
+
+        return response()->json(['message' => 'Failed.'], 400);
     }
 
     public function show($id, Request $request)

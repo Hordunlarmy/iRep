@@ -14,7 +14,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class AccountFactory
 {
     protected $db;
-    protected $accountColumns = null;
 
     public function __construct($db = null)
     {
@@ -87,7 +86,7 @@ class AccountFactory
     {
         $query = "
         SELECT
-            a.id, a.name, at.name AS account_type, a.photo_url, a.location, a.password,
+		a.*, at.name AS account_type,
             s.name AS state, lg.name AS local_government, a.created_at,
             CASE
                 WHEN a.account_type = 2 THEN JSON_OBJECT(
@@ -139,29 +138,78 @@ class AccountFactory
         }
     }
 
+    public function insertRepresentativeDetails($data)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            if (!empty($data['kyc'])) {
+                $data['kyc'] = app('uploadMediaService')->handleMediaFiles($data['kyc']);
+            }
+
+            $accountId = $this->updateAccount($data['id'], $data);
+
+            $this->db->commit();
+
+            return new Account($this->db, ['id' => $accountId]);
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function updateAccount($accountId, $data)
     {
-        $columns = $this->getAccountColumns();
+        $accountFields = [];
+        $accountValues = [];
+        $representativeFields = [];
+        $representativeValues = [];
 
-        $fields = [];
-        $values = [];
+        $representativeFieldNames = [
+            'position_id', 'district_id', 'constituency_id',
+            'party_id', 'social_handles', 'proof_of_office',
+            'sworn_in_date', 'bio'
+        ];
 
         foreach ($data as $key => $value) {
-            if (in_array($key, $columns) && $key !== 'id') {
-                // Handle JSON fields
-                if ($key === 'kyc' && is_array($value)) {
-                    $value = json_encode($value); // Encode array as JSON
+            if ($key !== 'id') {
+                if (($key === 'kyc' ||
+                    $key === 'proof_of_office' ||
+                    $key === 'social_handles') &&
+                    is_array($value)) {
+                    $value = json_encode($value);
                 }
-                $fields[] = "$key = ?";
-                $values[] = $value;
+
+                if (in_array($key, $representativeFieldNames)) {
+                    $representativeFields[] = "$key = ?";
+                    $representativeValues[] = $value;
+                } else {
+                    $accountFields[] = "$key = ?";
+                    $accountValues[] = $value;
+                }
             }
         }
 
-        $values[] = $accountId;
+        if (!empty($accountFields)) {
+            $accountFields[] = 'updated_at = CURRENT_TIMESTAMP';
+            $accountValues[] = $accountId;
+            $accountQuery = 'UPDATE accounts SET ' .
+                implode(', ', $accountFields) .
+                ' WHERE id = ?';
+            $this->db->prepare($accountQuery)
+                ->execute($accountValues);
+        }
 
-        $query = 'UPDATE accounts SET ' . implode(', ', $fields) . ' WHERE id = ?';
-
-        $this->db->prepare($query)->execute($values);
+        if (!empty($representativeFields)) {
+            $representativeQuery = 'UPDATE representatives SET ' .
+                implode(', ', $representativeFields) .
+                ' WHERE account_id = ?';
+            $this->db->prepare($representativeQuery)
+                ->execute(array_merge(
+                    $representativeValues,
+                    [$accountId]
+                ));
+        }
 
         return $accountId;
     }
@@ -201,17 +249,6 @@ class AccountFactory
         }
 
         return $stmt->fetch(\PDO::FETCH_ASSOC);
-    }
-
-    private function getAccountColumns()
-    {
-        if ($this->accountColumns === null) {
-            $query = "SHOW COLUMNS FROM accounts";
-            $result = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN);
-            $this->accountColumns = $result;
-        }
-
-        return $this->accountColumns;
     }
 
     public function resendActivation($email)

@@ -24,6 +24,9 @@ Route::middleware('auth:api')->get('/auth/user', function (Request $request) {
     return response()->json($response, 200);
 });
 
+Route::get('/search', [HomePageController::class, 'search'])->name('search')
+    ->middleware('auth:api', 'activated');
+
 Route::group([
     'prefix' => 'auth'
 ], function () {
@@ -48,6 +51,7 @@ Route::group([
     'middleware' => ['auth:api', 'activated']
 ], function () {
     Route::get('/representatives', [HomePageController::class, 'repIndex'])->name('repIndex');
+    Route::post('/representatives/apply', [AccountController::class, 'applyForRep'])->name('applyForRep');
     Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
     Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('upload');
     Route::post('/profile/update', [AccountController::class, 'update'])->name('update');
@@ -71,6 +75,13 @@ Route::group([
     Route::post('/{id}/comment', [CommentController::class, 'create'])->name('create');
     Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
 
+});
+
+Route::group([
+    'prefix' => 'comments',
+    'middleware' => ['auth:api', 'activated']
+], function () {
+    Route::get('/', [CommentController::class, 'index'])->name('index');
 });
 
 Route::group([

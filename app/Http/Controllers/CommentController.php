@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\CommentRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
@@ -35,6 +36,13 @@ class CommentController extends Controller
         }
 
         return response()->json($comment);
+    }
+
+    public function index()
+    {
+        $comments = $this->commentFactory->getCommentsByUser(Auth::id());
+
+        return response()->json(CommentResource::collection($comments));
     }
 
     public function like($id)

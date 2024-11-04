@@ -7,6 +7,19 @@ use App\Http\Resources\HomePageResource;
 
 class HomePageController extends Controller
 {
+    public function search(Request $request)
+    {
+        try {
+            $criteria = $request->only([
+                'search', 'sort_by', 'sort_order', 'page', 'page_size'
+            ]);
+            $result = $this->homeFactory->globalSearch($criteria);
+
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to search ' . $e->getMessage()], 500);
+        }
+    }
     public function repIndex(Request $request)
     {
         try {
@@ -44,10 +57,10 @@ class HomePageController extends Controller
                 'search', 'sort_by', 'sort_order', 'page',
                 'page_size', 'status', 'category', 'post_type'
             ]);
-            $result = $this->homeFactory->getCommunityPosts($criteria);
+            $result = $this->homeFactory->getPosts($criteria);
 
             return response()->json([
-            'data' => HomePageResource::collection($result['data'])->map->toPostArray(),
+            'data' => HomePageResource::collection($result['data'])->map->toPostArray()->flatten(1),
             'meta' => [
                 'total' => (int) $result['total'],
                 'current_page' => (int) $result['current_page'],
