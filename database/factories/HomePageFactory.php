@@ -5,7 +5,7 @@ namespace Database\Factories;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class homePageFactory extends postFactory
+class HomePageFactory extends PostFactory
 {
     protected $db;
 

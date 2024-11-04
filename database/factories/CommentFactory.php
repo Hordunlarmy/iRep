@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Support\Facades\DB;
 
-class commentFactory
+class CommentFactory
 {
     protected $db;
 
