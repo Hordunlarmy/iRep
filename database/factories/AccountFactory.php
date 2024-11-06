@@ -68,7 +68,7 @@ class AccountFactory
                 'district', 'state', 'local_government'
             ];
 
-            $total = app('meilisearch')->indexData(
+            $total = app('search')->indexData(
                 'accounts',
                 [$dataToIndex],
                 $sortableAttributes,

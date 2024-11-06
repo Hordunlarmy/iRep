@@ -3,17 +3,17 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Services\MeilisearchService;
+use App\Services\SearchEngineService;
 
-class MeilisearchServiceProvider extends ServiceProvider
+class SearchEngineServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
      */
     public function register(): void
     {
-        $this->app->singleton('meilisearch', function ($app) {
-            return new MeilisearchService();
+        $this->app->singleton('search', function ($app) {
+            return new SearchEngineService();
         });
 
     }

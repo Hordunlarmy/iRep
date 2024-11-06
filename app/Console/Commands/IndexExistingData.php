@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\DB;
 
 class IndexExistingData extends Command
 {
-    protected $signature = 'meilisearch:index-existing';
-    protected $description = 'Index existing data from the database into Meilisearch';
+    protected $signature = 'search:index-existing';
+    protected $description = 'Index existing data from the database into SearchEngine';
 
-    protected $meilisearch;
+    protected $searchEngine;
 
     public function __construct()
     {
         parent::__construct();
-        $this->meilisearch = app('meilisearch');
+        $this->searchEngine = app('search');
     }
 
     public function handle(): void
@@ -57,7 +57,7 @@ class IndexExistingData extends Command
             ];
 
             // Index account data in Meilisearch
-            $total = $this->meilisearch->indexData(
+            $total = $this->searchEngine->indexData(
                 'accounts',
                 $accountDataArray,
                 $sortableAttributes,
@@ -98,7 +98,7 @@ class IndexExistingData extends Command
             $sortableAttributes = ['created_at', 'title', 'post_type'];
             $filterableAttributes = ['status', 'category', 'post_type'];
 
-            $total = $this->meilisearch->indexData(
+            $total = $this->searchEngine->indexData(
                 'posts',
                 $postsDataArray,
                 $sortableAttributes,

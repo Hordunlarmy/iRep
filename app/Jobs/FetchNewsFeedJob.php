@@ -42,7 +42,7 @@ class FetchNewsFeedJob implements ShouldQueue
 
         if ($response->successful()) {
             $newsFeed = $response->json();
-            $result = app('meilisearch')->indexData('news_feed', $newsFeed);
+            $result = app('search')->indexData('news_feed', $newsFeed);
 
             Log::info($result . ' News feed successfully indexed.');
         } else {

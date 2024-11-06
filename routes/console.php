@@ -10,8 +10,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-Artisan::command('meilisearch:index-existing', function () {
+Artisan::command('search:index-existing', function () {
     $this->call(IndexExistingData::class);
-})->purpose('Index existing data into Meilisearch');
+})->purpose('Index existing data into SearchEngine');
 
 Schedule::job(new FetchNewsFeedJob())->everyMinute();

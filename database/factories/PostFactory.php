@@ -65,7 +65,7 @@ class PostFactory extends CommentFactory
             $sortableAttributes = ['created_at', 'title', 'post_type'];
             $filterableAttributes = ['status', 'category', 'post_type'];
 
-            $total = app('meilisearch')->indexData(
+            $total = app('search')->indexData(
                 'posts',
                 [$dataToIndex],
                 $sortableAttributes,

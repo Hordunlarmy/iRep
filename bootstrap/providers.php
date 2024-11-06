@@ -5,6 +5,6 @@ return [
     App\Providers\BroadcastServiceProvider::class,
     App\Providers\EmailServiceProvider::class,
     App\Providers\MediaHandlerServiceProvider::class,
-    App\Providers\MeilisearchServiceProvider::class,
+    App\Providers\SearchEngineServiceProvider::class,
     App\Providers\UtilServiceProvider::class,
 ];

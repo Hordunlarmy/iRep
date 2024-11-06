@@ -154,6 +154,8 @@ class HomePageFactory extends PostFactory
         }
     }
 
+
+
     public function getRepresentativesFromDatabase($criteria)
     {
         $page = $criteria['page'] ?? 1;
@@ -212,7 +214,7 @@ class HomePageFactory extends PostFactory
         }
     }
 
-    private function buildFilters(array $filters): string
+    protected function buildFilters(array $filters): string
     {
         $meiliFilters = [];
         foreach ($filters as $field => $value) {
