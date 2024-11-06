@@ -1,0 +1,75 @@
+2024-11-06 19:08:55,200 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-06 19:08:55,202 INFO supervisord started with pid 1
+2024-11-06 19:08:56,205 INFO spawned: 'laravel_queue_worker' with pid 64
+2024-11-06 19:08:56,207 INFO spawned: 'laravel_reverb' with pid 65
+2024-11-06 19:08:56,210 INFO spawned: 'laravel_serve' with pid 66
+2024-11-06 19:08:58,015 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:08:58,015 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:08:58,015 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:09:38,048 WARN received SIGTERM indicating exit request
+2024-11-06 19:09:38,049 INFO waiting for laravel_queue_worker, laravel_reverb, laravel_serve to die
+2024-11-06 19:09:38,079 INFO stopped: laravel_serve (exit status 0)
+2024-11-06 19:09:38,097 INFO stopped: laravel_reverb (exit status 0)
+2024-11-06 19:09:38,121 INFO stopped: laravel_queue_worker (exit status 0)
+2024-11-06 19:10:50,909 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-06 19:10:50,911 INFO supervisord started with pid 1
+2024-11-06 19:10:51,913 INFO spawned: 'laravel_queue_worker' with pid 65
+2024-11-06 19:10:51,915 INFO spawned: 'laravel_reverb' with pid 66
+2024-11-06 19:10:51,918 INFO spawned: 'laravel_serve' with pid 67
+2024-11-06 19:10:53,734 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:10:53,734 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:10:53,734 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:20:26,158 WARN received SIGTERM indicating exit request
+2024-11-06 19:20:26,159 INFO waiting for laravel_queue_worker, laravel_reverb, laravel_serve to die
+2024-11-06 19:20:26,176 INFO stopped: laravel_serve (exit status 0)
+2024-11-06 19:20:26,184 INFO stopped: laravel_reverb (exit status 0)
+2024-11-06 19:20:26,192 INFO stopped: laravel_queue_worker (exit status 0)
+2024-11-06 19:21:32,542 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-06 19:21:32,544 INFO supervisord started with pid 1
+2024-11-06 19:21:33,546 INFO spawned: 'laravel_queue_worker' with pid 65
+2024-11-06 19:21:33,548 INFO spawned: 'laravel_reverb' with pid 66
+2024-11-06 19:21:33,550 INFO spawned: 'laravel_serve' with pid 67
+2024-11-06 19:21:35,376 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:21:35,376 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:21:35,376 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:24:37,905 WARN received SIGTERM indicating exit request
+2024-11-06 19:24:37,905 INFO waiting for laravel_queue_worker, laravel_reverb, laravel_serve to die
+2024-11-06 19:24:37,925 INFO stopped: laravel_serve (exit status 0)
+2024-11-06 19:24:37,942 INFO stopped: laravel_reverb (exit status 0)
+2024-11-06 19:24:37,964 INFO stopped: laravel_queue_worker (exit status 0)
+2024-11-06 19:25:44,943 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-06 19:25:44,949 INFO supervisord started with pid 1
+2024-11-06 19:25:45,951 INFO spawned: 'laravel_queue_worker' with pid 70
+2024-11-06 19:25:45,954 INFO spawned: 'laravel_reverb' with pid 71
+2024-11-06 19:25:45,958 INFO spawned: 'laravel_serve' with pid 72
+2024-11-06 19:25:47,828 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:25:47,829 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:25:47,829 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:35:21,266 WARN received SIGTERM indicating exit request
+2024-11-06 19:35:21,267 INFO waiting for laravel_queue_worker, laravel_reverb, laravel_serve to die
+2024-11-06 19:35:21,295 INFO stopped: laravel_serve (exit status 0)
+2024-11-06 19:35:21,312 INFO stopped: laravel_reverb (exit status 0)
+2024-11-06 19:35:21,327 INFO stopped: laravel_queue_worker (exit status 0)
+2024-11-06 19:36:28,530 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-06 19:36:28,535 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2024-11-06 19:36:28,535 INFO supervisord started with pid 1
+2024-11-06 19:36:29,537 INFO spawned: 'laravel_queue_worker' with pid 64
+2024-11-06 19:36:29,539 INFO spawned: 'laravel_reverb' with pid 65
+2024-11-06 19:36:29,542 INFO spawned: 'laravel_serve' with pid 66
+2024-11-06 19:36:31,346 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:36:31,346 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:36:31,346 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:40:31,811 WARN received SIGTERM indicating exit request
+2024-11-06 19:40:31,811 INFO waiting for laravel_queue_worker, laravel_reverb, laravel_serve to die
+2024-11-06 19:40:31,834 INFO stopped: laravel_serve (exit status 0)
+2024-11-06 19:40:32,850 INFO stopped: laravel_reverb (exit status 0)
+2024-11-06 19:40:32,875 INFO stopped: laravel_queue_worker (exit status 0)
+2024-11-06 19:51:35,401 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-06 19:51:35,409 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2024-11-06 19:51:35,409 INFO supervisord started with pid 1
+2024-11-06 19:51:36,411 INFO spawned: 'laravel_queue_worker' with pid 64
+2024-11-06 19:51:36,413 INFO spawned: 'laravel_reverb' with pid 65
+2024-11-06 19:51:36,416 INFO spawned: 'laravel_serve' with pid 66
+2024-11-06 19:51:38,218 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:51:38,219 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-06 19:51:38,219 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

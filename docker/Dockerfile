@@ -8,6 +8,7 @@ RUN apt-get update && \
         libjpeg-dev \
         libfreetype6-dev \
         unzip \
+        supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-configure pcntl --enable-pcntl \
     && docker-php-ext-install gd mysqli pdo pdo_mysql zip pcntl \
@@ -29,7 +30,8 @@ RUN composer install
 # Expose the port for the Laravel application
 EXPOSE 8000
 
-# Copy the entrypoint script into the image
+# Copy Supervisor config file and entrypoint script into the image
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Make the entrypoint script executable
@@ -37,3 +39,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+

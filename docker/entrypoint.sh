@@ -13,7 +13,7 @@ fi
 php artisan migrate:refresh --seed --force
 
 # Index existing records in the database
-php artisan meilisearch:index-existing
+php artisan search:index-existing
 
 # Clear the cache, routes, config, and views
 php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear
@@ -21,14 +21,6 @@ php artisan route:clear && php artisan config:clear && php artisan cache:clear &
 # Set permissions for the storage and bootstrap/cache directories
 chown -R www-data:www-data storage bootstrap/cache
 
-# Start Reverb for broadcasting
-echo "Starting Reverb server..."
-php artisan reverb:start --debug &
-
-# Start Laravel queue worker
-echo "Starting Laravel queue worker..."
-php artisan queue:work --daemon &
-
-# Run the Laravel application using artisan serve
-echo "Starting Laravel application..."
-exec php artisan serve --host=0.0.0.0 --port=8000
+# Start Supervisor to manage background processes
+echo "Starting Supervisor..."
+exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
