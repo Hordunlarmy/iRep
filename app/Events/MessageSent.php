@@ -40,4 +40,13 @@ class MessageSent implements ShouldBroadcast
             new Channel('presence.chat'),
         ];
     }
+
+    public function broadcastWith()
+    {
+        return [
+            'id' => $this->message->id,
+            'sender_id' => $this->message->senderId,
+            'receiver_id' => $this->message->receiverId,
+        ];
+    }
 }

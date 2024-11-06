@@ -16,10 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
-    ->withBroadcasting(
-        __DIR__.'/../routes/channels.php',
-        ['prefix' => 'api', 'middleware' => ['api', 'auth:api']],
-    )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: [
             env('APP_URL') . 'api/*',

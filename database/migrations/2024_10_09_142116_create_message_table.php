@@ -17,8 +17,9 @@ return new class () extends Migration {
 				sender_id INT,
 				receiver_id INT,
 				message TEXT,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				read_at TIMESTAMP,
+				sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				edited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 				FOREIGN KEY (sender_id) REFERENCES accounts(id) ON DELETE CASCADE,
 				FOREIGN KEY (receiver_id) REFERENCES accounts(id) ON DELETE CASCADE
 			)"

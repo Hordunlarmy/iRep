@@ -12,12 +12,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 Route::middleware('auth:api')->get('/auth/user', function (Request $request) {
+
     $user = Auth::user();
 
     $response = [
         'id' => $user->id,
-        'email' => $user->email,
         'name' => $user->name,
+        'account_type' => $user->account_type,
+        'email' => $user->email,
         'email_verified' => $user->email_verified,
     ];
 
@@ -91,7 +93,10 @@ Route::group([
     'prefix' => 'chats',
     'middleware' => ['auth:api', 'activated']], function () {
         Route::post('/send', [ChatController::class, 'send'])->name('chat.send');
+        Route::get('/unread', [ChatController::class, 'getUnreadMessages'])->name('chat.unread');
         Route::get('/{id}', [ChatController::class, 'index'])->name('chat.index');
+        Route::post('/{id}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
+        Route::delete('/messages/{id}', [ChatController::class, 'delete'])->name('chat.delete');
     });
 
 Route::get('/', function () {

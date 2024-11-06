@@ -9,7 +9,8 @@ RUN apt-get update && \
         libfreetype6-dev \
         unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mysqli pdo pdo_mysql zip \
+    && docker-php-ext-configure pcntl --enable-pcntl \
+    && docker-php-ext-install gd mysqli pdo pdo_mysql zip pcntl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,4 +37,3 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-

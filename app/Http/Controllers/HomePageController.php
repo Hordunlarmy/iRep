@@ -33,7 +33,7 @@ class HomePageController extends Controller
             return response()->json([
                 'data' => HomePageResource::collection(
                     $result['data']
-                )->map->toRepArray($request),
+                )->map->toRepArray($request)->flatten(1),
                 'meta' => [
                     'total' => (int) $result['total'],
                     'current_page' => (int) $result['current_page'],
