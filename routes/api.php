@@ -55,6 +55,7 @@ Route::group([
     Route::get('/representatives', [HomePageController::class, 'repIndex'])->name('repIndex');
     Route::post('/representatives/apply', [AccountController::class, 'applyForRep'])->name('applyForRep');
     Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
+    Route::get('/status', [AccountController::class, 'status'])->name('status');
     Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('account.upload');
     Route::post('/profile/update', [AccountController::class, 'update'])->name('account.update');
     Route::get('/{id}', [AccountController::class, 'show'])->name('account.show');

@@ -127,6 +127,9 @@ class AccountFactory
                 $data['kyc'] = app('uploadMediaService')->handleMediaFiles($data['kyc']);
             }
 
+            // dummy kyc data
+            $data['kyced'] = true;
+
             $accountId = $this->updateAccount($data['id'], $data);
 
             $this->db->commit();
@@ -311,6 +314,15 @@ class AccountFactory
         $query = 'UPDATE accounts SET email_verified = ? WHERE id = ?';
         $stmt = $this->db->prepare($query);
         $stmt->execute([true, $accountId]);
+    }
+
+    public function fetchStatus($accountId)
+    {
+        $query = 'SELECT id, email_verified, kyced FROM accounts WHERE id = ?';
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$accountId]);
+
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
 }

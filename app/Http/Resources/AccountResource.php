@@ -90,4 +90,5 @@ class AccountResource extends JsonResource
 
         return $profileArray;
     }
+
 }

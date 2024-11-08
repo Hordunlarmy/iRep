@@ -26,6 +26,15 @@ class AccountController extends Controller
 
     }
 
+    public function status()
+    {
+        $currentUser = Auth::user();
+
+        $status = $this->accountFactory->fetchStatus($currentUser->id);
+
+        return response()->json($status, 200);
+    }
+
     public function upload(Request $request, $type)
     {
         try {
