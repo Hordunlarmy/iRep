@@ -121,3 +121,12 @@
 2024-11-08 13:33:36,925 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2024-11-08 13:33:36,925 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2024-11-08 13:33:36,926 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-08 13:49:18,684 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2024-11-08 13:49:18,693 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2024-11-08 13:49:18,694 INFO supervisord started with pid 1
+2024-11-08 13:49:19,697 INFO spawned: 'laravel_queue_worker' with pid 65
+2024-11-08 13:49:19,708 INFO spawned: 'laravel_reverb' with pid 66
+2024-11-08 13:49:19,718 INFO spawned: 'laravel_serve' with pid 67
+2024-11-08 13:49:20,722 INFO success: laravel_queue_worker entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-08 13:49:20,722 INFO success: laravel_reverb entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2024-11-08 13:49:20,722 INFO success: laravel_serve entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

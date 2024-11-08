@@ -18,6 +18,11 @@ class CheckUserActivated
 
             if ($email) {
                 $account = DB::table('accounts')->where('email', $email)->first();
+
+                if (!$account) {
+                    return response()->json(['message' => 'Account Does Not Exist.'], 401);
+                }
+
             }
         }
 
