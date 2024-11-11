@@ -10,7 +10,9 @@ if [ ! -d "vendor" ]; then
 fi
 
 # Run Laravel migrate and seed database
-php artisan migrate:refresh --seed --force
+#php artisan migrate:refresh --seed --force
+
+php artisan migrate --force && php artisan db:seed --force
 
 # Index existing records in the database
 php artisan search:index-existing
