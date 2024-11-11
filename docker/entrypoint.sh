@@ -12,10 +12,19 @@ fi
 # Run Laravel migrate and seed database
 #php artisan migrate:refresh --seed --force
 
-php artisan migrate --force && php artisan db:seed --force
+# Run Laravel migration and seeder gracefully
+if ! php artisan migrate --force; then
+	echo "Migration failed, proceeding without stopping the container..."
+fi
+
+if ! php artisan db:seed --force; then
+	echo "Seeding failed, proceeding without stopping the container..."
+fi
 
 # Index existing records in the database
-php artisan search:index-existing
+if ! php artisan search:index-existing; then
+	echo "Indexing existing records failed, proceeding without stopping the container..."
+fi
 
 # Clear the cache, routes, config, and views
 php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear
