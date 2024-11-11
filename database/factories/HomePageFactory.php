@@ -41,7 +41,7 @@ class HomePageFactory extends PostFactory
         $categorizedResults = [];
 
         foreach ($indexes as $indexName) {
-            $results = app('meilisearch')->search($indexName, $query, $searchParams);
+            $results = app('search')->search($indexName, $query, $searchParams);
             $hits = $results['hits'] ?? [];
             $totalCount = $results['nbHits'] ?? 0;
 
@@ -92,7 +92,7 @@ class HomePageFactory extends PostFactory
                 'attributesToRetrieve' => ['*'],
             ];
 
-            $results = app('meilisearch')->search('posts', $query, $searchParams);
+            $results = app('search')->search('posts', $query, $searchParams);
 
             $totalCount = $results['nbHits'] ?? 0;
             $lastPage = ceil($totalCount / $pageSize);
@@ -137,7 +137,7 @@ class HomePageFactory extends PostFactory
                 'attributesToRetrieve' => ['*'],
             ];
 
-            $results = app('meilisearch')->search('accounts', $query, $searchParams);
+            $results = app('search')->search('accounts', $query, $searchParams);
 
             $totalCount = $results['nbHits'] ?? 0;
             $lastPage = ceil($totalCount / $pageSize);
