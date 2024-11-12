@@ -44,7 +44,8 @@ class FetchNewsFeedJob implements ShouldQueue
         $startDate = now()->format('Y-m-d');
         $endDate = now()->format('Y-m-d');
 
-        $response = Http::withHeaders($this->getAuthorizationHeader())
+        $response = Http::timeout(60)->
+            withHeaders($this->getAuthorizationHeader())
             ->get("{$this->baseUri}/viewer/reports/as-geojson", [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
