@@ -11,6 +11,7 @@ use Database\Factories\PostFactory;
 use Database\Factories\CommentFactory;
 use Database\Factories\MessageFactory;
 use Database\Factories\HomePageFactory;
+use Database\Factories\NewsFeedFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,6 +27,7 @@ abstract class Controller extends BaseController
     protected $commentFactory;
     protected $messageFactory;
     protected $homeFactory;
+    protected $newsFeedFactory;
 
     /**
      * Create a new Controller instance and initialize the database connection.
@@ -40,6 +42,7 @@ abstract class Controller extends BaseController
         $this->commentFactory = new CommentFactory();
         $this->messageFactory = new MessageFactory();
         $this->homeFactory = new HomePageFactory();
+        $this->newsFeedFactory = new NewsFeedFactory();
     }
 
     /**

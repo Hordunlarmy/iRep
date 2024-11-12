@@ -23,7 +23,7 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:accounts,email|max:255',
+            'email' => 'required|email|max:255',
             'phone_number' => 'required|string|max:255',
             'state_id' => 'required|exists:states,id',
             'local_government_id' => 'required|exists:local_governments,id',

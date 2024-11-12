@@ -18,15 +18,22 @@ class SearchEngineService
         string $indexName,
         array $data,
         array $sortableAttributes = [],
-        array $filterableAttributes = []
+        array $filterableAttributes = [],
+        string|int|null $primaryKey = null,
     ): int {
         // Filter out null values from the data
         $filteredData = app('utils')->filterNullValues($data);
 
         $index = $this->client->index($indexName);
+
+        if ($primaryKey !== null) {
+            $index->update(['primaryKey' => $primaryKey]);
+        }
+
         if (!empty($sortableAttributes)) {
             $index->updateSortableAttributes($sortableAttributes);
         }
+
         if (!empty($filterableAttributes)) {
             $index->updateFilterableAttributes($filterableAttributes);
         }

@@ -69,6 +69,9 @@ class AccountResource extends JsonResource
             'cover_photo_url' => $responseArray['cover_photo_url'] ?? null,
             'name' => $responseArray['name'] ?? null,
             'email' => $responseArray['email'] ?? null,
+            'phone_number' => $responseArray['phone_number'] ?? null,
+            'location' => $responseArray['location'] ?? null,
+            'local_government' => $responseArray['local_government'] ?? null,
         ];
 
         $request->merge(['filter' => 'petition']);

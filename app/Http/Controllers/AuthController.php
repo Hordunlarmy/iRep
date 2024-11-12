@@ -81,6 +81,8 @@ class AuthController extends Controller
             $validated['kyc'] = $kycFiles;
         }
 
+        \Log::info('OnboardAccountRequest', ['validated' => $validated]);
+
 
         $account = $this->accountFactory->insertAccountDetails($validated);
         $this->accountFactory->indexAccount($account->id);

@@ -7,6 +7,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HomePageController;
+use App\Http\Controllers\NewsFeedController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,13 +38,13 @@ Route::group([
     Route::get('callback/{provider}', [AuthController::class, 'callback'])->name('callback');
     Route::post('activate', [AuthController::class, 'activateAccount'])->name('activate');
     Route::post('resend', [AuthController::class, 'resendActivation'])->name('resend');
+    Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
 
     Route::group([
         'middleware' => ['auth:api', 'activated']
     ], function () {
         Route::post('login', [AuthController::class, 'login'])->name('login')->withoutMiddleware('auth:api');
         Route::post('onboard', [AuthController::class, 'onboard'])->name('onboard');
-        Route::post('refresh', [AuthController::class, 'refresh'])->name('refresh');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     });
 });
@@ -99,6 +100,13 @@ Route::group([
         Route::post('/{id}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
         Route::delete('/messages/{id}', [ChatController::class, 'delete'])->name('chat.delete');
     });
+
+Route::group([
+    'prefix' => 'feeds',
+    'middleware' => ['auth:api', 'activated']
+], function () {
+    Route::get('/', [NewsFeedController::class, 'index'])->name('feeds.index');
+});
 
 Route::get('/', function () {
     return response()->json([

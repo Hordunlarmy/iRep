@@ -20,13 +20,13 @@ class NewsFeedFactory extends HomePageFactory
         $pageSize = $criteria['page_size'] ?? 10;
         $offset = ($page - 1) * $pageSize;
         $query = $criteria['search'] ?? '';
-        $sortBy = $criteria['sort_by'] ?? 'created_at';
+        $sortBy = $criteria['sort_by'] ?? 'report_date_published';
         $sortOrder = $criteria['sort_order'] ?? 'desc';
 
         $filters = [
-            'status' => $criteria['status'] ?? null,
-            'category' => $criteria['category'] ?? null,
-            'post_type' => $criteria['post_type'] ?? null,
+            'place_geocode_name' => $criteria['place_geocode_name'] ?? null,
+            'source_name' => $criteria['source_name'] ?? null,
+            'entity_value' => $criteria['entity_value'] ?? null,
         ];
 
         $searchParams = [
@@ -37,7 +37,7 @@ class NewsFeedFactory extends HomePageFactory
             'attributesToRetrieve' => ['*'],
         ];
 
-        $results = app('meilisearch')->search('news-feed', $query, $searchParams);
+        $results = app('search')->search('news_feed', $query, $searchParams);
 
         $totalCount = $results['nbHits'] ?? 0;
         $lastPage = ceil($totalCount / $pageSize);
@@ -45,7 +45,7 @@ class NewsFeedFactory extends HomePageFactory
         return [
             'data' => $results['hits'] ?? [],
             'total' => $totalCount,
-            'current_page' => $page,
+            'current_page' => (int) $page,
             'last_page' => $lastPage,
         ];
     }
