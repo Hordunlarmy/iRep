@@ -71,7 +71,7 @@ class FetchNewsFeedJob implements ShouldQueue
         $logs[] = "End Date: $endDate";
 
 
-        $response = Http::timeout(60)->
+        $response = Http::timeout(600)->
             withHeaders($this->getAuthorizationHeader())
             ->get("{$this->baseUri}/viewer/reports/as-geojson", [
                 'start_date' => $startDate,
