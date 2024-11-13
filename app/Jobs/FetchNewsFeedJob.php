@@ -10,6 +10,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class FetchNewsFeedJob implements ShouldQueue
 {
@@ -34,15 +36,40 @@ class FetchNewsFeedJob implements ShouldQueue
         Log::info('FetchNewsFeedJob started.');
 
         $this->authenticate($logs);
+        $admin = $this->getAuthor();
+
+        $logs[] = "Admin ID: $admin->id";
 
         if (!$this->authToken) {
-            Log::error('auth token not available. Skipping news feed fetch.');
+            Log::error('Auth token not available. Skipping news feed fetch.');
             $logs[] = 'Auth token not available. Skipping news feed fetch.';
             return $logs;
         }
 
-        $startDate = now()->format('Y-m-d');
+        $results = app('search')->search('news_feed', '', [
+            'sort' => ['report_date_published:desc'],
+            'limit' => 1,
+        ]);
+
+        $hits = $results['hits'] ?? null;
+        $lastIndexedDocument = $hits ? $hits[0] : null;
+
+        $startDate = $lastIndexedDocument && isset($lastIndexedDocument['report_date_published'])
+            ? Carbon::parse($lastIndexedDocument['report_date_published'])->format('Y-m-d')
+            : now()->format('Y-m-d');
+
         $endDate = now()->format('Y-m-d');
+
+        if ($lastIndexedDocument) {
+            $logs[] = "Last indexed document: " . json_encode([
+                'report_title' => $lastIndexedDocument['report_title'] ?? 'N/A',
+                'report_date_published' => $lastIndexedDocument['report_date_published'] ?? 'N/A'
+            ]);
+        }
+
+        $logs[] = "Start Date: $startDate";
+        $logs[] = "End Date: $endDate";
+
 
         $response = Http::timeout(60)->
             withHeaders($this->getAuthorizationHeader())
@@ -55,7 +82,13 @@ class FetchNewsFeedJob implements ShouldQueue
             $features = $response->json()['data']['features'] ?? [];
 
             // Extract all properties for bulk indexing
-            $reportsData = array_map(fn ($feature) => $feature['properties'], $features);
+            $reportsData = array_map(fn ($feature) => array_merge(
+                $feature['properties'],
+                ['post_type' => 'newsfeed'],
+                ['author' => $admin->name],
+                ['author_id' => $admin->id],
+            ), $features);
+
             $sortableAttributes = [
                 'report_date_published', 'report_title',
                 'place_geocode_name', 'place_admin_level',];
@@ -124,5 +157,12 @@ class FetchNewsFeedJob implements ShouldQueue
         return [
             'Authorization' => 'Bearer ' . $this->authToken,
         ];
+    }
+
+    protected function getAuthor()
+    {
+        $user = DB::table('accounts')->where('email', env('NEWS_API_EMAIL'))->first();
+
+        return $user ?: null;
     }
 }

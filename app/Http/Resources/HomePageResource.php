@@ -88,6 +88,7 @@ class HomePageResource extends JsonResource
             'context' => $data->context,
             'post_type' => $data->post_type,
             'author' => $data->author,
+            'author_id' => $data->author_id,
             'created_at' => $data->created_at,
             'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
             'comments' => $commentCount,

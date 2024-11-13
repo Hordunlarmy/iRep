@@ -81,6 +81,7 @@ class IndexExistingData extends Command
             $postsData = DB::select("
 				SELECT p.id, p.title, p.context, p.post_type, p.media,
 				a.name AS author,
+				a.id AS author_id,
 				rep.name AS target_representative,
 				pe.status,
 				pe.signatures,
@@ -96,7 +97,7 @@ class IndexExistingData extends Command
 
             $postsDataArray = json_decode(json_encode($postsData), true);
             $sortableAttributes = ['created_at', 'title', 'post_type'];
-            $filterableAttributes = ['status', 'category', 'post_type'];
+            $filterableAttributes = ['status', 'category', 'post_type', 'author'];
 
             $total = $this->searchEngine->indexData(
                 'posts',

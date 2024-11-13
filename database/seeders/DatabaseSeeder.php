@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(PositionSeeder::class);
         $this->call(DistrictSeeder::class);
         $this->call(ConstituencySeeder::class);
+        $this->call(AdminSeeder::class);
         $this->call(AccountSeeder::class);
         $this->call(RepresentativeSeeder::class);
         $this->call(PostSeeder::class);

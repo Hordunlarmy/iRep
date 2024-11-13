@@ -53,6 +53,7 @@ class PostFactory extends CommentFactory
                 'media' => $fetchedPost->media,
                 'post_type' => $fetchedPost->post_type,
                 'author' => $fetchedPost->author,
+                'author_id' => $fetchedPost->author_id,
                 'target_representative' => $postData['target_representative'] ?? null,
                 'status' => $postData['status'] ?? null,
                 'signatures' => $postData['signatures'] ?? null,
@@ -63,7 +64,7 @@ class PostFactory extends CommentFactory
             ];
 
             $sortableAttributes = ['created_at', 'title', 'post_type'];
-            $filterableAttributes = ['status', 'category', 'post_type'];
+            $filterableAttributes = ['status', 'category', 'post_type', 'author'];
 
             $total = app('search')->indexData(
                 'posts',
@@ -89,6 +90,7 @@ class PostFactory extends CommentFactory
 		p.media,
 		p.post_type,
 		a.name AS author,
+		a.id AS author_id,
 		p.created_at,
 		CASE
 		WHEN p.post_type = 'petition' THEN JSON_OBJECT(
