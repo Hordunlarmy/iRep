@@ -5,8 +5,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: irep
     ports:
-      - "80:8000"
-      - "8080:8080"
+      - "2208:8000"
+      - "8090:8080"
     volumes:
       - .:/workspace/irep
       - ./storage/logs:/workspace/irep/storage/logs
@@ -36,7 +36,7 @@ services:
     image: mariadb:latest
     container_name: irepDB
     ports:
-      - "3309:3306"
+      - "2209:3306"
     env_file:
       - docker/database.env
     volumes:
@@ -55,7 +55,7 @@ services:
     image: getmeili/meilisearch:v1.11
     container_name: meilisearch
     ports:
-      - "7700:7700"
+      - "7709:7700"
     depends_on:
       database:
         condition: service_healthy
@@ -77,7 +77,7 @@ services:
     image: redis:alpine
     container_name: redis
     ports:
-      - "6379:6379"
+      - "6370:6379"
     env_file:
       - docker/redis.env
     volumes:
