@@ -7,7 +7,8 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use App\Models\Message;
-use App\Events\MessageSent;
+use App\Events\NewMessage;
+use Illuminate\Support\Facades\DB;
 
 class SendMessage implements ShouldQueue
 {
@@ -22,7 +23,19 @@ class SendMessage implements ShouldQueue
 
     public function handle(): void
     {
-        MessageSent::dispatch($this->message);
+        NewMessage::dispatch($this->message);
 
+        $deviceId = DB::table('user_devices')
+            ->where('user_id', $this->message->receiverId)
+            ->value('device_id');
+
+        $notification = [
+            'user_id' => $this->message->receiverId,
+            'device_id' => $deviceId ?? null,
+            'title' => 'New Message',
+            'body' => 'You have a new message from User ID ' . $this->message->senderId,
+        ];
+
+        SendNotification::dispatch("message", $notification);
     }
 }

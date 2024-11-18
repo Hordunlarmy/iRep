@@ -6,9 +6,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use App\Events\LikeNotificationEvent;
-use App\Events\CommentNotificationEvent;
-use App\Events\RepostNotificationEvent;
+use Illuminate\Support\Facades\DB;
+use App\Events\Notification;
 
 class SendNotification implements ShouldQueue
 {
@@ -16,29 +15,51 @@ class SendNotification implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
 
-    public function __construct(public string $notificationType, public array $data)
+    protected $service;
+    public string $notificationType;
+    public array $data;
+
+    public function __construct(string $notificationType, array $data)
     {
-        // Accepts the type (e.g., 'like', 'comment', 'repost') and the data payload
+        $this->service = app('pushNotify');
+        $this->notificationType = $notificationType;
+        $this->data = $data;
     }
 
     public function handle(): void
     {
-        // Handle different types of notifications
-        switch ($this->notificationType) {
-            case 'like':
-                // LikeNotificationEvent::dispatch($this->data);
-                break;
+        $deviceToken = $this->data['device_token'] ?? null;
+        $title = $this->data['title'] ?? '';
+        $userId = $this->data['user_id'] ?? null;
+        $body = $this->data['body'] ?? '';
 
-            case 'comment':
-                // CommentNotificationEvent::dispatch($this->data);
-                break;
+        if (!$userId) {
+            return;
+        }
 
-            case 'repost':
-                // RepostNotificationEvent::dispatch($this->data);
-                break;
+        $notificationId = DB::table('account_notifications')->insertGetId([
+            'user_id' => $userId,
+            'type' => $this->notificationType,
+            'title' => $title,
+            'body' => $body,
+            'read_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-            default:
-                throw new \InvalidArgumentException("Unknown notification type: {$this->notificationType}");
+        $notification = [
+            'id' => $notificationId,
+            'user_id' => $userId,
+            'type' => $this->notificationType,
+            'title' => $title,
+            'body' => $body,
+            'read_at' => null,
+        ];
+
+        Notification::dispatch($notification);
+
+        if ($deviceToken) {
+            $this->service->sendPushNotification($deviceToken, $title, $body);
         }
     }
 }
