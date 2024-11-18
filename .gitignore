@@ -19,3 +19,6 @@ yarn-error.log
 /.idea
 /.vscode
 /.zed
+.php-cs-fixer.php
+supervisord.log
+supervisord.pid

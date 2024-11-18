@@ -70,7 +70,8 @@ class PostFactory extends CommentFactory
                 'posts',
                 [$dataToIndex],
                 $sortableAttributes,
-                $filterableAttributes
+                $filterableAttributes,
+                'id'
             );
             Log::info($total . ' Post Indexed');
 

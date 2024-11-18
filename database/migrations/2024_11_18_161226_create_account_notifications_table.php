@@ -12,14 +12,14 @@ return new class () extends Migration {
         DB::statement('
 			CREATE TABLE account_notifications (
 			id INT AUTO_INCREMENT PRIMARY KEY,
-			user_id INT,
+			account_id INT,
 			type VARCHAR(255) NOT NULL,
 			title VARCHAR(255) NOT NULL,
 			body TEXT NOT NULL,
 			read_at TIMESTAMP NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+			FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 			)
 			');
     }

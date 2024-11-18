@@ -25,15 +25,15 @@ class SendMessage implements ShouldQueue
     {
         NewMessage::dispatch($this->message);
 
-        $deviceId = DB::table('user_devices')
-            ->where('user_id', $this->message->receiverId)
-            ->value('device_id');
+        $deviceToken = DB::table('device_tokens')
+            ->where('account_id', $this->message->receiverId)
+            ->value('device_token');
 
         $notification = [
-            'user_id' => $this->message->receiverId,
-            'device_id' => $deviceId ?? null,
+            'account_id' => $this->message->receiverId,
+            'device_token' => $deviceToken ?? null,
             'title' => 'New Message',
-            'body' => 'You have a new message from User ID ' . $this->message->senderId,
+            'body' => 'You have a new message from Account ID ' . $this->message->senderId,
         ];
 
         SendNotification::dispatch("message", $notification);

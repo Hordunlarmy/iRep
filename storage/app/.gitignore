@@ -1,4 +1,4 @@
 !private/
 !public/
 !.gitignore
-fcm_service_account.json
+fcm-service-account.json

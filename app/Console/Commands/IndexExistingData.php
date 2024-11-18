@@ -58,10 +58,11 @@ class IndexExistingData extends Command
 
             // Index account data in Meilisearch
             $total = $this->searchEngine->indexData(
-                'accounts',
-                $accountDataArray,
-                $sortableAttributes,
-                $filterableAttributes
+                indexName: 'accounts',
+                data: $accountDataArray,
+                sortableAttributes: $sortableAttributes,
+                filterableAttributes: $filterableAttributes,
+                primaryKey: 'id',
             );
 
             // Log the number of indexed records
@@ -100,10 +101,11 @@ class IndexExistingData extends Command
             $filterableAttributes = ['status', 'category', 'post_type', 'author'];
 
             $total = $this->searchEngine->indexData(
-                'posts',
-                $postsDataArray,
-                $sortableAttributes,
-                $filterableAttributes
+                indexName: 'posts',
+                data: $postsDataArray,
+                sortableAttributes: $sortableAttributes,
+                filterableAttributes: $filterableAttributes,
+                primaryKey: 'id',
             );
 
             $this->info($total . ' Posts indexed successfully.');

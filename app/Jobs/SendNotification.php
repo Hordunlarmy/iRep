@@ -21,7 +21,6 @@ class SendNotification implements ShouldQueue
 
     public function __construct(string $notificationType, array $data)
     {
-        $this->service = app('pushNotify');
         $this->notificationType = $notificationType;
         $this->data = $data;
     }
@@ -30,15 +29,15 @@ class SendNotification implements ShouldQueue
     {
         $deviceToken = $this->data['device_token'] ?? null;
         $title = $this->data['title'] ?? '';
-        $userId = $this->data['user_id'] ?? null;
+        $accountId = $this->data['account_id'] ?? null;
         $body = $this->data['body'] ?? '';
 
-        if (!$userId) {
+        if (!$accountId) {
             return;
         }
 
         $notificationId = DB::table('account_notifications')->insertGetId([
-            'user_id' => $userId,
+            'account_id' => $accountId,
             'type' => $this->notificationType,
             'title' => $title,
             'body' => $body,
@@ -49,7 +48,7 @@ class SendNotification implements ShouldQueue
 
         $notification = [
             'id' => $notificationId,
-            'user_id' => $userId,
+            'account_id' => $accountId,
             'type' => $this->notificationType,
             'title' => $title,
             'body' => $body,
@@ -59,7 +58,7 @@ class SendNotification implements ShouldQueue
         Notification::dispatch($notification);
 
         if ($deviceToken) {
-            $this->service->sendPushNotification($deviceToken, $title, $body);
+            app('pushNotify')->sendPushNotification($deviceToken, $title, $body);
         }
     }
 }

@@ -32,7 +32,7 @@ class Notification implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("user.{$this->notification['user_id']}"),
+            new PrivateChannel("user.{$this->notification['account_id']}"),
         ];
     }
 
