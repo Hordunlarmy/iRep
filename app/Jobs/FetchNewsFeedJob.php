@@ -46,19 +46,13 @@ class FetchNewsFeedJob implements ShouldQueue
             return $logs;
         }
 
+        $results = app('search')->search('news_feed', '', [
+            'sort' => ['report_date_published:desc'],
+            'limit' => 1,
+        ]);
 
-        $lastIndexedDocument = null;
-        try {
-            $results = app('search')->search('news_feed', '', [
-                'sort' => ['report_date_published:desc'],
-                'limit' => 1,
-            ]);
-            $hits = $results['hits'] ?? null;
-            $lastIndexedDocument = $hits ? $hits[0] : null;
-        } catch (\Exception $e) {
-            Log::warning('Index "news_feed" does not exist. Continuing without previous documents.');
-            $logs[] = 'Index "news_feed" does not exist. Continuing without previous documents.';
-        }
+        $hits = $results['hits'] ?? null;
+        $lastIndexedDocument = $hits ? $hits[0] : null;
 
         $startDate = $lastIndexedDocument && isset($lastIndexedDocument['report_date_published'])
             ? Carbon::parse($lastIndexedDocument['report_date_published'])->format('Y-m-d')
@@ -77,7 +71,7 @@ class FetchNewsFeedJob implements ShouldQueue
         $logs[] = "End Date: $endDate";
 
 
-        $response = Http::timeout(1800)->
+        $response = Http::timeout(600)->
             withHeaders($this->getAuthorizationHeader())
             ->get("{$this->baseUri}/viewer/reports/as-geojson", [
                 'start_date' => $startDate,
@@ -104,9 +98,9 @@ class FetchNewsFeedJob implements ShouldQueue
             $result = app('search')->indexData(
                 indexName: 'news_feed',
                 data: $reportsData,
+                primaryKey: 'report_id',
                 sortableAttributes: $sortableAttributes,
                 filterableAttributes: $filterableAttributes,
-                primaryKey: 'report_id',
             );
             Log::info($result . ' News feed successfully indexed.');
             $logs[] = "$result News feed successfully indexed.";

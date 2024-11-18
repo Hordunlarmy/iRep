@@ -21,7 +21,6 @@ class SearchEngineService
         array $filterableAttributes = [],
         string|int|null $primaryKey = null,
     ): int {
-
         // Filter out null values from the data
         $filteredData = app('utils')->filterNullValues($data);
 
@@ -52,16 +51,6 @@ class SearchEngineService
 
         return $response;
 
-    }
-
-    public function getTasks()
-    {
-        return $this->client->getTasks();
-    }
-
-    public function deleteIndex(string $indexName): void
-    {
-        $this->client->index($indexName)->delete();
     }
 
     public function clearAllIndexes(): void
