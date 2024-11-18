@@ -57,7 +57,7 @@ class HomePageController extends Controller
                 'search', 'sort_by', 'sort_order', 'page',
                 'page_size', 'status', 'category', 'post_type'
             ]);
-            $result = $this->homeFactory->getPosts($criteria);
+            $result = $this->homeFactory->getCommunityPosts($criteria);
 
             return response()->json([
             'data' => HomePageResource::collection($result['data'])->map->toPostArray()->flatten(1),
