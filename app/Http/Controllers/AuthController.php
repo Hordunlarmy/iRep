@@ -91,6 +91,12 @@ class AuthController extends Controller
 
     }
 
+    public function indexOnboard()
+    {
+        return $this->accountFactory->getOnboardingDetails(Auth::user()->id);
+
+    }
+
     public function login(Request $request)
     {
         $request->validate([

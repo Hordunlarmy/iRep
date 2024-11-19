@@ -38,7 +38,7 @@ class HomePageController extends Controller
                     'total' => (int) $result['total'],
                     'current_page' => (int) $result['current_page'],
                     'last_page' => (int) $result['last_page'],
-                    'page_size' => (int) $criteria['page_size'] ?? 10,
+                    'page_size' => (int) $result['page_size'],
                 ],
             ], 200);
 
@@ -65,7 +65,7 @@ class HomePageController extends Controller
                 'total' => (int) $result['total'],
                 'current_page' => (int) $result['current_page'],
                 'last_page' => (int) $result['last_page'],
-                'page_size' => (int) $criteria['page_size'] ?? 10,
+                'page_size' => (int) $result['page_size'],
             ],
         ], 200);
         } catch (\Exception $e) {

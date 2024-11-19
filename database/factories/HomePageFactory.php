@@ -22,7 +22,7 @@ class HomePageFactory extends PostFactory
             return [];
         };
 
-        $indexes = ['posts', 'accounts'];
+        $indexes = ['posts', 'accounts', 'news_feed'];
         $page = $criteria['page'] ?? 1;
         $pageSize = $criteria['page_size'] ?? 10;
         $offset = ($page - 1) * $pageSize;
@@ -34,7 +34,7 @@ class HomePageFactory extends PostFactory
             'filter' => $this->buildFilters($filters),
             'limit' => (int) $pageSize,
             'offset' => (int) $offset,
-            'sort' => ["$sortBy:$sortOrder"],
+            # 'sort' => ["$sortBy:$sortOrder"],
             'attributesToRetrieve' => ['*'],
         ];
 
@@ -102,6 +102,7 @@ class HomePageFactory extends PostFactory
                 'total' => $totalCount,
                 'current_page' => $page,
                 'last_page' => $lastPage,
+                'page_size' => (int) $pageSize,
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching posts from meillisearch: ' . $e->getMessage());
@@ -147,6 +148,8 @@ class HomePageFactory extends PostFactory
                 'total' => $totalCount,
                 'current_page' => $page,
                 'last_page' => $lastPage,
+                'page_size' => (int) $pageSize,
+
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching representatives from meillisearch: ' . $e->getMessage());

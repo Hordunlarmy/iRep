@@ -141,6 +141,28 @@ class AccountFactory
         }
     }
 
+    public function getOnboardingDetails($accountId)
+    {
+        try {
+            Log::info('Fetching onboarding details for account: ' . $accountId);
+
+            $query = "
+            SELECT name, gender, dob, state_id, local_government_id
+            FROM accounts
+            WHERE id = :id
+        ";
+
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([$accountId]);
+
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching onboarding details: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
     public function insertRepresentativeDetails($data)
     {
         try {

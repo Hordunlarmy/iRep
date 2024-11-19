@@ -45,6 +45,7 @@ Route::group([
     ], function () {
         Route::post('login', [AuthController::class, 'login'])->name('login')->withoutMiddleware('auth:api');
         Route::post('onboard', [AuthController::class, 'onboard'])->name('onboard');
+        Route::get('onboard', [AuthController::class, 'indexOnboard'])->name('indexOnboard');
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     });
 });
