@@ -120,4 +120,13 @@ class AccountController extends Controller
 
     }
 
+    public function notifications()
+    {
+        $accountId = Auth::id();
+
+        $notifications = $this->accountFactory->fetchNotifications($accountId);
+
+        return response()->json($notifications, 200);
+    }
+
 }

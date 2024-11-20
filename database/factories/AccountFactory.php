@@ -41,6 +41,29 @@ class AccountFactory
         }
     }
 
+    public function updateDeviceToken($accountId, $deviceToken, $deviceType)
+    {
+        $query = 'INSERT INTO device_tokens (account_id, device_token, device_type)
+              VALUES (?, ?, ?)
+              ON DUPLICATE KEY UPDATE
+              device_token = VALUES(device_token),
+              device_type = VALUES(device_type)';
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$accountId, $deviceToken, $deviceType]);
+    }
+
+    public function fetchNotifications($accountId)
+    {
+        $query = 'SELECT * FROM account_notifications
+			WHERE account_id = ? ORDER BY created_at DESC'
+        ;
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$accountId]);
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function indexAccount($accountId)
     {
         try {

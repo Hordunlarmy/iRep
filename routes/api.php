@@ -58,6 +58,7 @@ Route::group([
     Route::post('/representatives/apply', [AccountController::class, 'applyForRep'])->name('applyForRep');
     Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
     Route::get('/status', [AccountController::class, 'status'])->name('status');
+    Route::get('/notifications', [AccountController::class, 'notifications'])->name('notifications');
     Route::post('/profile/upload/{type}', [AccountController::class, 'upload'])->name('account.upload');
     Route::post('/profile/update', [AccountController::class, 'update'])->name('account.update');
     Route::get('/{id}', [AccountController::class, 'show'])->name('account.show');

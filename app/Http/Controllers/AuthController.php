@@ -100,29 +100,33 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-        'email' => 'required|email|exists:accounts,email',
-        'password' => 'required'
+            'email' => 'required|email|exists:accounts,email',
+            'password' => 'required',
+            'device_token' => 'nullable|string',
+            'device_type' => 'nullable|string',
         ]);
 
         $credentials = $request->only('email', 'password');
+        $deviceToken = $request->input('device_token');
+        $deviceType = $request->input('device_type');
 
         $result = $this->accountFactory->getAccount($credentials['email']);
         $resultArray = json_decode(json_encode($result), true);
 
         $user = new Account(null, $resultArray);
 
-        if ($user) {
-            if (Hash::check($credentials['password'], $user->password)) {
-                Log::info('User authenticated');
-                $token = Auth::login($user);
-
-                return $this->tokenResponse($token);
-            } else {
-                return response()->json(['error' => 'Incorrect credentials'], 401);
-            }
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return response()->json(['error' => 'Incorrect credentials'], 401);
         }
 
-        return response()->json(['error' => 'Incorrect credentials'], 401);
+        if ($deviceToken && $deviceType) {
+            $this->accountFactory->updateDeviceToken($user->id, $deviceToken, $deviceType);
+        }
+
+        Log::info('User authenticated.', ['user' => $user->id]);
+        $token = Auth::login($user);
+
+        return $this->tokenResponse($token);
     }
 
     public function redirect($provider)
