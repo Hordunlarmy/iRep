@@ -123,13 +123,5 @@ abstract class Controller extends BaseController
         return $data;
     }
 
-    public function getNotifications()
-    {
-        $accountId = Auth::id();
-
-        $notifications = $this->accountFactory->fetchNotifications($accountId);
-
-        return response()->json($notifications, 200);
-    }
 
 }

@@ -28,7 +28,7 @@ class CreatePostRequest extends FormRequest
             'media.*' => 'nullable|file|mimes:jpeg,png,jpg,mp4,mov,avi|max:20480',
             'target_signatures' => 'nullable|integer|min:1',
             'target_representative_id' => 'nullable|exists:representatives,id',
-            'category' => 'nullabel|in:crime,accident,other',
+            'category' => 'nullable|in:crime,accident,other',
         ];
     }
 
