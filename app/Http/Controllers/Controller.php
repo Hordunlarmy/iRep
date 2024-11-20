@@ -14,6 +14,7 @@ use Database\Factories\HomePageFactory;
 use Database\Factories\NewsFeedFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendNotification;
 
 abstract class Controller extends BaseController
 {
@@ -81,7 +82,16 @@ abstract class Controller extends BaseController
         $result = $this->{$entity . 'Factory'}->toggleAction($actionType, $id, $accountId);
 
         if ($result) {
+            $notification = [
+            'account_id' => $accountId,
+            'title' => 'Someone liked your post',
+            'body' => 'Your post has been liked by Account ID ' . $accountId,
+        ];
+
+            SendNotification::dispatch("like", $notification);
+
             return response()->json(['message' => $result], 200);
+
         }
         return response()->json(['message' => 'Action failed'], 400);
     }

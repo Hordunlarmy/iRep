@@ -27,14 +27,17 @@ class SendNotification implements ShouldQueue
 
     public function handle(): void
     {
-        $deviceToken = $this->data['device_token'] ?? null;
-        $title = $this->data['title'] ?? '';
         $accountId = $this->data['account_id'] ?? null;
+        $title = $this->data['title'] ?? '';
         $body = $this->data['body'] ?? '';
 
         if (!$accountId) {
             return;
         }
+
+        $deviceToken = DB::table('device_tokens')
+            ->where('account_id', $accountId)
+            ->value('device_token');
 
         $notificationId = DB::table('account_notifications')->insertGetId([
             'account_id' => $accountId,
