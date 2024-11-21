@@ -1,0 +1,4 @@
+db_path = "/data.ms"
+http_addr = "0.0.0.0:7700"
+master_key = "bR_AfM4uKiw89_MdZGliueDCCIqLYeHIhZ07XaKosHQ="
+
