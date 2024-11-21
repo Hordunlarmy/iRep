@@ -1,1 +1,4 @@
-
+**/meilisearch
+database.env
+irep.env
+redis.env
