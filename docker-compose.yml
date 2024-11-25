@@ -5,8 +5,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: irep
     ports:
-      - "2207:8000"
       - "8090:8080"
+      - "8091:8000"
     volumes:
       - .:/workspace/irep
       - ./storage/logs:/workspace/irep/storage/logs
@@ -34,9 +34,8 @@ services:
     image: nginx:alpine
     container_name: nginx
     ports:
-      - "443:443"
+      - "2207:2207"
       - "2208:2208"
-      - "80:80"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./docker/nginx/ssl:/etc/nginx/ssl
