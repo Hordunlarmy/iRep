@@ -28,12 +28,20 @@ class PostResource extends JsonResource
             ->where('entity_id', $data->id)
             ->count() ?? 0;
 
+        $badge = 0;
+        if ($data->author_kyced) {
+            $badge = $data->author_account_type === '1'
+                ? 1
+                : ($data->author_account_type === '2' ? 2 : 0);
+        }
+
         $responseArray = [
             'id' => $data->id,
             'title' => $data->title,
             'context' => $data->context,
             'post_type' => $data->post_type,
             'author' => $data->author,
+            'author_badge' => $badge,
             'created_at' => $data->created_at,
             'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
             'comments' => $commentCount,
