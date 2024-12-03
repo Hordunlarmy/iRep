@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ConstituencySeeder extends Seeder
 {
@@ -394,6 +394,12 @@ class ConstituencySeeder extends Seeder
             ['name' => 'Kwali', 'state_id' => 37],
         ];
 
-        DB::table('constituencies')->insert($constituencies);
+        foreach ($constituencies as $constituency) {
+            try {
+                DB::table('constituencies')->insert($constituency);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert constituency: ' . $e->getMessage(), $constituency);
+            }
+        }
     }
 }

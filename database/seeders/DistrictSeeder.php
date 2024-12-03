@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DistrictSeeder extends Seeder
 {
@@ -203,7 +203,13 @@ class DistrictSeeder extends Seeder
             ['name' => 'Abuja', 'state_id' => 37],
         ];
 
-        DB::table('districts')->insert($districts);
+        foreach ($districts as $district) {
+            try {
+                DB::table('districts')->insert($district);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert district: ' . $e->getMessage(), $district);
+            }
+        }
 
     }
 }

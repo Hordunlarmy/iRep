@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StateSeeder extends Seeder
 {
@@ -56,7 +56,12 @@ class StateSeeder extends Seeder
             ['name' => 'Federal Capital Territory'],
         ];
 
-        // Insert states into the states table
-        DB::table('states')->insert($states);
+        foreach ($states as $state) {
+            try {
+                DB::table('states')->insert($state);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert state data: ' . $e->getMessage());
+            }
+        }
     }
 }

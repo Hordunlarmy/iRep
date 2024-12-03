@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AccountSeeder extends Seeder
 {
@@ -45,7 +46,12 @@ class AccountSeeder extends Seeder
             ],
         ];
 
-        DB::table('accounts')->insert($accountsData);
-
+        foreach ($accountsData as $account) {
+            try {
+                DB::table('accounts')->insert($account);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert account: ' . $e->getMessage(), $account);
+            }
+        }
     }
 }

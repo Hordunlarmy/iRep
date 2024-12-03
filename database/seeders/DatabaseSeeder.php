@@ -21,5 +21,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AccountSeeder::class);
         $this->call(RepresentativeSeeder::class);
         $this->call(PostSeeder::class);
+        $this->call(AdminDataSeeder::class);
     }
 }

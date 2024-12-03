@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LocalGovernmentSeeder extends Seeder
 {
@@ -868,7 +869,13 @@ class LocalGovernmentSeeder extends Seeder
 
         ];
 
-        // Insert local governments into the local_governments table
-        DB::table('local_governments')->insert($localGovernments);
+        foreach ($localGovernments as $lg) {
+            try {
+                DB::table('local_governments')->insert($lg);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert LG: ' . $e->getMessage(), $lg);
+            }
+        }
+
     }
 }

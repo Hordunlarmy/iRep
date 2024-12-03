@@ -26,6 +26,10 @@ if ! php artisan search:index-existing; then
 	echo "Indexing existing records failed, proceeding without stopping the container..."
 fi
 
+if ! php artisan create:superadmin "irep" "irep6565"; then
+	echo "Creating superadmin failed, proceeding without stopping the container..."
+fi
+
 # if ! php artisan news:fetch; then
 # 	echo "Fetching and Indexing news failed, proceeding without stopping the container..."
 # fi

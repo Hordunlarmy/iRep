@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
@@ -24,6 +25,12 @@ class AdminSeeder extends Seeder
             ]
         ];
 
-        DB::table('accounts')->insert($adminData);
+        foreach ($adminData as $admin) {
+            try {
+                DB::table('accounts')->insert($admin);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert admin: ' . $e->getMessage(), $admin);
+            }
+        }
     }
 }

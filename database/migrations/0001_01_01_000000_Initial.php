@@ -23,6 +23,10 @@ return new class () extends Migration {
             ['id' => 2, 'name' => 'representative'],
             ['id' => 3, 'name' => 'admin'],
         ]);
+        DB::table('account_types')->updateOrInsert(
+            ['id' => 4],
+            ['name' => 'super_admin']
+        );
 
         // Create the states table
         DB::statement("

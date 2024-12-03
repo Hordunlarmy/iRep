@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PostSeeder extends Seeder
 {
@@ -22,7 +23,7 @@ class PostSeeder extends Seeder
                 'post_type' => 'petition',
                 'title' => 'Petition for Improved Healthcare Services',
                 'context' => 'Our healthcare system needs urgent reforms to better serve the community.',
-                'media' => json_encode(['https://i.imgur.com/DI5HhNd.jpeg','https://i.imgur.com/SMBmLqX.jpeg' ]),
+                'media' => json_encode(['https://i.imgur.com/DI5HhNd.jpeg', 'https://i.imgur.com/SMBmLqX.jpeg']),
                 'creator_id' => 2,
                 'target_representative_id' => 11,
             ],
@@ -64,33 +65,41 @@ class PostSeeder extends Seeder
         ];
 
         foreach ($petitionsData as $petition) {
-            $postId = DB::table('posts')->insertGetId([
-                'post_type' => $petition['post_type'],
-                'title' => $petition['title'],
-                'context' => $petition['context'],
-                'media' => $petition['media'],
-                'creator_id' => $petition['creator_id'],
-            ]);
+            try {
+                $postId = DB::table('posts')->insertGetId([
+                    'post_type' => $petition['post_type'],
+                    'title' => $petition['title'],
+                    'context' => $petition['context'],
+                    'media' => $petition['media'],
+                    'creator_id' => $petition['creator_id'],
+                ]);
 
-            DB::table('petitions')->insert([
-                'post_id' => $postId,
-                'target_representative_id' => $petition['target_representative_id'],
-            ]);
+                DB::table('petitions')->insert([
+                    'post_id' => $postId,
+                    'target_representative_id' => $petition['target_representative_id'],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert petition: ' . $e->getMessage(), $petition);
+            }
         }
 
         foreach ($eyewitnessReportsData as $report) {
-            $postId = DB::table('posts')->insertGetId([
-                'post_type' => $report['post_type'],
-                'title' => $report['title'],
-                'context' => $report['context'],
-                'media' => $report['media'],
-                'creator_id' => $report['creator_id'],
-            ]);
+            try {
+                $postId = DB::table('posts')->insertGetId([
+                    'post_type' => $report['post_type'],
+                    'title' => $report['title'],
+                    'context' => $report['context'],
+                    'media' => $report['media'],
+                    'creator_id' => $report['creator_id'],
+                ]);
 
-            DB::table('eye_witness_reports')->insert([
-                'post_id' => $postId,
-                'category' => $report['category'],
-            ]);
+                DB::table('eye_witness_reports')->insert([
+                    'post_id' => $postId,
+                    'category' => $report['category'],
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert eyewitness report: ' . $e->getMessage(), $report);
+            }
         }
     }
 }

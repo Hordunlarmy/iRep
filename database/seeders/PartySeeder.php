@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PartySeeder extends Seeder
 {
@@ -13,7 +13,7 @@ class PartySeeder extends Seeder
      */
     public function run()
     {
-        DB::table('parties')->insert([
+        $partyData = [
             ['name' => 'Accord', 'code' => 'A'],
             ['name' => 'Action Alliance', 'code' => 'AA'],
             ['name' => 'Action Democratic Party', 'code' => 'ADP'],
@@ -32,6 +32,15 @@ class PartySeeder extends Seeder
             ['name' => 'Social Democratic Party', 'code' => 'SDP'],
             ['name' => 'Young Progressives Party', 'code' => 'YPP'],
             ['name' => 'Zenith Labour Party', 'code' => 'ZLP'],
-        ]);
+        ];
+
+        foreach ($partyData as $party) {
+            try {
+                DB::table('parties')->insert($party);
+            } catch (\Exception $e) {
+                Log::error('Failed to insert party data: ' . $e->getMessage());
+            }
+        }
     }
+
 }
