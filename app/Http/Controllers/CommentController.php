@@ -26,7 +26,7 @@ class CommentController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
         $comment = $this->commentFactory->getComment($id);
 
@@ -36,7 +36,7 @@ class CommentController extends Controller
             ], 404);
         }
 
-        return response()->json(new CommentResource($comment));
+        return response()->json((new CommentResource($comment))->toDetailArray($request));
     }
 
     public function index()

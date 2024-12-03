@@ -68,6 +68,7 @@ class PostResource extends JsonResource
 
         $comments = DB::table('comments')
             ->where('post_id', $responseArray['id'])
+            ->whereNull('parent_id')
             ->get();
 
         if (isset($postData['approvals'])) {
@@ -94,10 +95,13 @@ class PostResource extends JsonResource
             $responseArray['status'] = $postData['status'];
         }
 
-        if (isset($comments)) {
-            $responseArray['comments'] = $comments;
-        }
+        if ($comments->isNotEmpty()) {
+            $nestedComments = $comments->map(function ($comment) use ($request) {
+                return (new CommentResource($comment))->toDetailArray($request);
+            });
 
+            $responseArray['comments'] = $nestedComments;
+        }
         return $responseArray;
     }
 }

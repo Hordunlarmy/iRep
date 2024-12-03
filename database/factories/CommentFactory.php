@@ -34,9 +34,11 @@ class CommentFactory
     public function getComment($id)
     {
         $query = "
-		SELECT *
-		FROM comments
-		WHERE id = ?";
+		SELECT comments.*, accounts.id AS author_id,
+		accounts.photo_url AS author_photo_url, accounts.name AS author_name
+        FROM comments
+        LEFT JOIN accounts ON comments.account_id = accounts.id
+        WHERE comments.id = ?";
 
         $stmt = $this->db->prepare($query);
         $stmt->execute([$id]);
@@ -47,9 +49,13 @@ class CommentFactory
     public function getCommentsByUser($accountId)
     {
         $query = "
-		SELECT *
-		FROM comments
-		WHERE account_id = ?";
+        SELECT comments.*,
+               accounts.id AS author_id,
+               accounts.photo_url AS author_photo_url,
+               accounts.name AS author_name
+        FROM comments
+        LEFT JOIN accounts ON comments.account_id = accounts.id
+        WHERE comments.account_id = ?";
 
         $stmt = $this->db->prepare($query);
         $stmt->execute([$accountId]);

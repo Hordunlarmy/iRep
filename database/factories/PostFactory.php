@@ -136,6 +136,9 @@ class PostFactory extends CommentFactory
 			p.media,
 			p.post_type,
 			a.name AS author,
+			a.kyced AS author_kyced,
+			a.account_type AS author_account_type,
+			a.id AS author_id,
 			p.created_at,
 			CASE
 				WHEN p.post_type = 'petition' THEN JSON_OBJECT(

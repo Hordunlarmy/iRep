@@ -90,7 +90,8 @@ return new class () extends Migration {
         DB::statement("
             CREATE TABLE accounts (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                photo_url VARCHAR(255),
+				photo_url VARCHAR(255) DEFAULT
+				'https://res.cloudinary.com/dsueaitln/image/upload/v1733239113/istockphoto-522855255-612x612_eyv1vf.jpg',
                 cover_photo_url VARCHAR(255),
                 name VARCHAR(255),
                 email VARCHAR(255) UNIQUE NOT NULL,
