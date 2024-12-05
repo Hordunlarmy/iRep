@@ -43,7 +43,7 @@ class CommentFactory
         $stmt = $this->db->prepare($query);
         $stmt->execute([$id]);
 
-        return $stmt->fetch();
+        return $stmt->fetchObject();
     }
 
     public function getCommentsByUser($accountId)

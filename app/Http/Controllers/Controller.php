@@ -78,24 +78,44 @@ abstract class Controller extends BaseController
         $this->findEntity($entity, $id);
 
         $accountId = Auth::id();
-
         $result = $this->{$entity . 'Factory'}->toggleAction($actionType, $id, $accountId);
 
-        if ($result) {
+        if ($result === 'added') {
+            $entityData = $this->findEntity($entity, $id);
+
+            $notificationMessages = [
+                'likes' => [
+                    'title' => 'Someone liked your {entity}',
+                    'body'  => Auth::user()->name . ' liked your {entity}',
+                ],
+                'reposts' => [
+                    'title' => 'Someone reposted your {entity}',
+                    'body'  => Auth::user()->name . ' reposted your {entity}',
+                ],
+                'bookmarks' => [
+                    'title' => 'Someone bookmarked your {entity}',
+                    'body'  => Auth::user()->name . ' bookmarked your {entity}',
+                ],
+            ];
+
+            $entityType = $entity;
+            $notificationTemplate = $notificationMessages[$actionType] ?? [
+                'title' => 'Activity on your {entity}',
+                'body'  => Auth::user()->name . ' interacted with your {entity}',
+            ];
+
             $notification = [
-            'account_id' => $accountId,
-            'title' => 'Someone liked your post',
-            'body' => 'Your post has been liked by Account ID ' . $accountId,
-        ];
+                'account_id' => $entityData->author_id,
+                'entity_id'  => $id,
+                'title'      => str_replace('{entity}', $entityType, $notificationTemplate['title']),
+                'body'       => str_replace('{entity}', $entityType, $notificationTemplate['body']),
+            ];
 
-            SendNotification::dispatch("like", $notification);
-
-            return response()->json(['message' => $result], 200);
-
+            SendNotification::dispatch($entity, $notification);
         }
-        return response()->json(['message' => 'Action failed'], 400);
-    }
 
+        return response()->json(['message' => $result], 200);
+    }
 
     /**
      * Find an entity (account, post, comment etc).

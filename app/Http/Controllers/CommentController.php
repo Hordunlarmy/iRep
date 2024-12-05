@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CommentRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\CommentResource;
+use App\Jobs\SendNotification;
 
 class CommentController extends Controller
 {
@@ -19,6 +20,18 @@ class CommentController extends Controller
             $validatedData['parentId'] = $commentId;
 
             $commentId = $this->commentFactory->insertComment($validatedData);
+            $comment = $this->findEntity('comment', $commentId);
+
+            $notificationData = [
+                'entity_id' => $commentId,
+                'account_id' => $comment->account_id,
+                'post_id' => $comment->post_id,
+                'parent_id' => $comment->parent_id,
+                'title' => 'New comment on your post',
+                'body' => Auth::user()->name . ' commented on your post',
+            ];
+
+            SendNotification::dispatch('comment', $notificationData);
 
             return response()->json(['comment_id' => $commentId], 201);
         } catch (\Exception $e) {

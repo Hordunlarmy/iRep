@@ -35,6 +35,10 @@ class SendNotification implements ShouldQueue
             return;
         }
 
+        $extraFields = collect($this->data)->except([
+        'account_id', 'title', 'body',
+        ])->toArray();
+
         $deviceToken = DB::table('device_tokens')
             ->where('account_id', $accountId)
             ->value('device_token');
@@ -49,14 +53,19 @@ class SendNotification implements ShouldQueue
             'updated_at' => now(),
         ]);
 
-        $notification = [
+        $notification = array_merge(
+            [
             'id' => $notificationId,
             'account_id' => $accountId,
             'type' => $this->notificationType,
             'title' => $title,
             'body' => $body,
             'read_at' => null,
-        ];
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+            $extraFields
+        );
 
         Notification::dispatch($notification);
 

@@ -43,7 +43,7 @@ class PostSeeder extends Seeder
                 'title' => 'Eyewitness Report: Accident on Main Street',
                 'context' => 'I witnessed a serious accident involving two cars at the intersection.',
                 'media' => json_encode(['https://i.imgur.com/bNSRtUa.jpeg', 'https://i.imgur.com/ZGBLL5r.jpeg']),
-                'creator_id' => 1,
+                'creator_id' => 4,
                 'category' => 'accident',
             ],
             [
@@ -51,7 +51,7 @@ class PostSeeder extends Seeder
                 'title' => 'Eyewitness Report: Theft at Local Market',
                 'context' => 'I saw a theft incident at the local market yesterday afternoon.',
                 'media' => json_encode(['https://i.imgur.com/cbxyz99.jpeg', 'https://i.imgur.com/U43c4kd.jpeg']),
-                'creator_id' => 2,
+                'creator_id' => 5,
                 'category' => 'crime',
             ],
             [
@@ -59,7 +59,7 @@ class PostSeeder extends Seeder
                 'title' => 'Eyewitness Report: Fire Incident at Warehouse',
                 'context' => 'A fire broke out at the warehouse causing significant damage.',
                 'media' => json_encode(['https://i.imgur.com/68BVZ0K.jpeg', 'https://i.imgur.com/8OFejgA.jpeg']),
-                'creator_id' => 3,
+                'creator_id' => 6,
                 'category' => 'other',
             ],
         ];

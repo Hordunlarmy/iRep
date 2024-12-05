@@ -48,9 +48,12 @@ class CommentResource extends JsonResource
             ->count() ?? 0;
 
         $replies = DB::table('comments')
-            ->where('parent_id', $data->id)
+            ->leftJoin('accounts', 'comments.account_id', '=', 'accounts.id')
+            ->where('comments.parent_id', $data->id)
             ->orderBy('commented_at')
+            ->select('comments.*', 'accounts.id AS author_id', 'accounts.name AS author_name', 'accounts.photo_url AS author_photo_url')
             ->get();
+
 
         $nestedReplies = $replies->map(function ($reply) use ($request) {
             return (new CommentResource($reply))->toDetailArray($request);

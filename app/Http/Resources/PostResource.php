@@ -67,8 +67,10 @@ class PostResource extends JsonResource
         $responseArray = $this->toArray($request);
 
         $comments = DB::table('comments')
+            ->leftJoin('accounts', 'comments.account_id', '=', 'accounts.id')
             ->where('post_id', $responseArray['id'])
             ->whereNull('parent_id')
+            ->select('comments.*', 'accounts.id AS author_id', 'accounts.name AS author_name', 'accounts.photo_url AS author_photo_url')
             ->get();
 
         if (isset($postData['approvals'])) {
