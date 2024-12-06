@@ -60,17 +60,43 @@ class AdminFactory
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getAdmin(string $username = null, int $id = null): Admin
+    public function getAdmin(string $username = null, int $id = null): ?Admin
     {
         $query = "
-		SELECT *
-		FROM admins
-		WHERE username = ? OR id = ?";
+        SELECT *
+        FROM admins
+        WHERE username = ? OR id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->execute([$username, $id]);
 
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
 
+        if (!$data) {
+            return null;
+        }
+
         return new Admin($this->db, $data);
+    }
+
+    public function getAdmins($filter = [])
+    {
+        $query = "
+		SELECT *
+		FROM admins
+		WHERE account_type = 3";
+
+        if (isset($filter['account_type'])) {
+            $query .= " AND account_type = ?";
+        }
+
+        $stmt = $this->db->prepare($query);
+
+        if (isset($filter['account_type'])) {
+            $stmt->execute([$filter['account_type']]);
+        } else {
+            $stmt->execute();
+        }
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

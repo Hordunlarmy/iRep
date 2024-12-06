@@ -71,8 +71,10 @@ class AdminController extends Controller
 
         $token = Auth::login($admin);
 
-        return $this->tokenResponse($token);
-
+        return response()->json(array_merge(
+            $this->tokenResponse($token)->original,
+            ['account_type' => $admin->account_type]
+        ));
     }
 
 }
