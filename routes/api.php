@@ -8,6 +8,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NewsFeedController;
+use App\Admin\Controllers\AdminController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,14 @@ Route::middleware('auth:api')->get('/auth/user', function (Request $request) {
     ];
 
     return response()->json($response, 200);
+});
+
+Route::group([
+    'prefix' => 'admins',
+], function () {
+    Route::post('/create', [AdminController::class, 'create'])->name('admin.create');
+    Route::post('/create-super', [AdminController::class, 'createSuperAdmin'])->name('admin.createSuper');
+    Route::post('/login', [AdminController::class, 'login'])->name('admin.login');
 });
 
 Route::get('/search', [HomePageController::class, 'search'])->name('search')
@@ -116,6 +125,10 @@ Route::get('/', function () {
         'status' => 'success'
     ]);
 });
+
+
+Route::get('/permissions', [AdminController::class, 'getPermissions'])
+    ->name('permissions');
 
 Route::get('/account-types', function () {
     $accountTypes = DB::table('account_types')

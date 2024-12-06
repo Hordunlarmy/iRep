@@ -40,7 +40,7 @@ class CreateSuperAdmin extends Command
 
         $adminId = DB::table('admins')->insertGetId([
             'username' => $username,
-            'hashed_password' => Hash::make($password),
+            'password' => Hash::make($password),
             'account_type' => 4,
         ]);
 

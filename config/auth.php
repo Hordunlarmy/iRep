@@ -39,6 +39,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'accounts',
         ],
+        'admin' => [
+            'driver' => 'jwt',
+            'provider' => 'admins',
+        ],
     ],
     /*
     |--------------------------------------------------------------------------
@@ -66,6 +70,10 @@ return [
             'accounts' => [
                 'driver' => 'database',
                 'table' => 'accounts',
+            ],
+            'admins' => [
+                'driver' => 'database',
+                'table' => 'admins',
             ],
         ],
 
