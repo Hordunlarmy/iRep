@@ -77,4 +77,13 @@ class AdminController extends Controller
         ));
     }
 
+    public function index(Request $request)
+    {
+        $params = $request->only(['search', 'permission', 'page', 'page_size']);
+
+        $admins = $this->adminFactory->getAdmins($params);
+
+        return response()->json($admins);
+    }
+
 }

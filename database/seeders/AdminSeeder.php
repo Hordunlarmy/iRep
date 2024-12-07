@@ -2,34 +2,70 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     *
+     * @return void
      */
-    public function run(): void
+    public function run()
     {
-        // Seed default admin user
+        $availablePermissions = [1, 2, 3, 4];
+
         $adminData = [
             [
-                'name' => 'iREP',
-                'email' => 'news@irep.com',
-                'password' => bcrypt('irep6565'),
-                'photo_url' => 'https://i.imgur.com/HH3yXoK.png',
-                'account_type' => 3,
-                'email_verified' => true
+                'username' => 'admin1',
+                'password' => bcrypt('password'),
+                'account_type' => 3
+            ],
+            [
+                'username' => 'admin2',
+                'password' => bcrypt('password'),
+                'account_type' => 3
+            ],
+            [
+                'username' => 'admin3',
+                'password' => bcrypt('password'),
+                'account_type' => 3
+            ],
+            [
+                'username' => 'admin4',
+                'password' => bcrypt('password'),
+                'account_type' => 3
+            ],
+            [
+                'username' => 'admin5',
+                'password' => bcrypt('password'),
+                'account_type' => 3
+            ],
+            [
+                'username' => 'admin6',
+                'password' => bcrypt('password'),
+                'account_type' => 3
             ]
         ];
 
         foreach ($adminData as $admin) {
             try {
-                DB::table('accounts')->insert($admin);
+                $adminId = DB::table('admins')->insertGetId($admin);
+
+                $randomPermissions = array_rand($availablePermissions, rand(1, 3)); // Randomly select 1-3 permissions
+
+                $randomPermissions = is_array($randomPermissions) ? $randomPermissions : [$randomPermissions];
+
+                $permissionsData = [];
+                foreach ($randomPermissions as $permissionId) {
+                    $permissionsData[] = ['admin_id' => $adminId, 'permission_id' => $availablePermissions[$permissionId]];
+                }
+
+                DB::table('admin_permissions')->insert($permissionsData);
             } catch (\Exception $e) {
-                Log::error('Failed to insert admin: ' . $e->getMessage(), $admin);
+                Log::error('Failed to insert admin: ' . $e->getMessage(), ['admin' => $admin]);
             }
         }
     }

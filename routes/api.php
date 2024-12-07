@@ -34,6 +34,14 @@ Route::group([
     Route::post('/create', [AdminController::class, 'create'])->name('admin.create');
     Route::post('/create-super', [AdminController::class, 'createSuperAdmin'])->name('admin.createSuper');
     Route::post('/login', [AdminController::class, 'login'])->name('admin.login');
+
+    Route::group([
+        'middleware' => ['auth:admin']
+    ], function () {
+        Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+        Route::get('/permissions', [AdminController::class, 'getPermissions'])->name('admin.permissions');
+        Route::post('/logout', [AdminController::class, 'logout'])->name('admin.logout');
+    });
 });
 
 Route::get('/search', [HomePageController::class, 'search'])->name('search')
@@ -127,8 +135,14 @@ Route::get('/', function () {
 });
 
 
-Route::get('/permissions', [AdminController::class, 'getPermissions'])
-    ->name('permissions');
+Route::get('/permissions', function () {
+    $permissions = DB::table('permissions')
+        ->select('id', 'name')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return response()->json($permissions, 200);
+});
 
 Route::get('/account-types', function () {
     $accountTypes = DB::table('account_types')

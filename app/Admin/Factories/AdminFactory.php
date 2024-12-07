@@ -4,6 +4,7 @@ namespace App\Admin\Factories;
 
 use Illuminate\Support\Facades\DB;
 use App\Admin\Models\Admin;
+use Illuminate\Support\Facades\Log;
 
 /**
  * class for creating admin accounts
@@ -80,23 +81,102 @@ class AdminFactory
 
     public function getAdmins($filter = [])
     {
+        $stmt = $this->db->query("SELECT name FROM permissions");
+        $availablePermissions = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
         $query = "
-		SELECT *
-		FROM admins
-		WHERE account_type = 3";
+		SELECT
+			a.id,
+			a.username,
+			a.account_type,
+			COALESCE(
+				JSON_ARRAYAGG(
+					DISTINCT JSON_OBJECT('id', p.id, 'name', p.name)
+				),
+				JSON_ARRAY()
+			) AS permissions
+		FROM admins a
+		LEFT JOIN admin_permissions ap ON a.id = ap.admin_id
+		LEFT JOIN permissions p ON ap.permission_id = p.id
+		WHERE a.account_type = 3";
+
+        $params = [];
 
         if (isset($filter['account_type'])) {
-            $query .= " AND account_type = ?";
+            $query .= " AND a.account_type = ?";
+            $params[] = $filter['account_type'];
         }
+
+        $permissionFilters = [];
+        if (!empty($filter['permission']) && in_array($filter['permission'], $availablePermissions)) {
+            $permissionFilters[] = $filter['permission'];
+        }
+
+        if (!empty($permissionFilters)) {
+            $placeholders = implode(', ', array_fill(0, count($permissionFilters), '?'));
+            $query .= " AND p.name IN ($placeholders)";
+            $params = array_merge($params, $permissionFilters);
+        }
+
+        $query .= " GROUP BY a.id, a.username, a.password, a.account_type";
+
+        $page = $filter['page'] ?? 1;
+        $pageSize = $filter['page_size'] ?? 10;
+        $offset = ($page - 1) * $pageSize;
+
+        $query .= " LIMIT ? OFFSET ?";
+        $params[] = $pageSize;
+        $params[] = $offset;
 
         $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+        $admins = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        if (isset($filter['account_type'])) {
-            $stmt->execute([$filter['account_type']]);
-        } else {
-            $stmt->execute();
+        foreach ($admins as &$admin) {
+            $permissionsQuery = "
+            SELECT p.id, p.name
+            FROM permissions p
+            LEFT JOIN admin_permissions ap ON p.id = ap.permission_id
+            WHERE ap.admin_id = ?";
+            $permissionsStmt = $this->db->prepare($permissionsQuery);
+            $permissionsStmt->execute([$admin['id']]);
+            $admin['permissions'] = $permissionsStmt->fetchAll(\PDO::FETCH_ASSOC);
         }
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $totalRecords = $this->getTotalAdminsCount($filter, $permissionFilters);
+        return [
+            'data' => $admins,
+            'meta' => [
+                'current_page' => (int) $page,
+                'page_size' => (int) $pageSize,
+                'total_records' => $totalRecords,
+                'total_pages' => ceil($totalRecords / $pageSize),
+            ],
+        ];
+    }
+
+    private function getTotalAdminsCount($filter, $permissionFilters)
+    {
+        $countQuery = "
+		SELECT COUNT(DISTINCT a.id)
+		FROM admins a
+		LEFT JOIN admin_permissions ap ON a.id = ap.admin_id
+		LEFT JOIN permissions p ON ap.permission_id = p.id
+		WHERE a.account_type = 3";
+
+        if (isset($filter['account_type'])) {
+            $countQuery .= " AND a.account_type = ?";
+        }
+
+        if (!empty($permissionFilters)) {
+            $placeholders = implode(', ', array_fill(0, count($permissionFilters), '?'));
+            $countQuery .= " AND p.name IN ($placeholders)";
+        }
+
+        $params = $permissionFilters;
+
+        $countStmt = $this->db->prepare($countQuery);
+        $countStmt->execute($params);
+        return $countStmt->fetchColumn();
     }
 }

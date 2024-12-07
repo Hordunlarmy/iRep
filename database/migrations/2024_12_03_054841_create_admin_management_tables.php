@@ -9,16 +9,19 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        DB::statement('
+        DB::statement("
 			CREATE TABLE admins (
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			username VARCHAR(255) NOT NULL UNIQUE,
 			password VARCHAR(255) NOT NULL,
+			photo_url VARCHAR(255) DEFAULT
+			'https://res.cloudinary.com/dsueaitln/image/upload/v1733239113/istockphoto-522855255-612x612_eyv1vf.jpg',
+			email VARCHAR(255) UNIQUE,
 			account_type INT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 			)
-		');
+		");
 
         DB::statement('
 			CREATE TABLE permissions (
