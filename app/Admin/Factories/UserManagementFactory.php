@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\DB;
 use App\Admin\Models\Admin;
 use Illuminate\Support\Facades\Log;
 
-/**
- * class for creating admin accounts
- */
 class UserManagementFactory
 {
     protected $db;

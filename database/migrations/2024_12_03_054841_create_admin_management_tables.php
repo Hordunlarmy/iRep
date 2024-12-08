@@ -69,10 +69,24 @@ return new class () extends Migration {
 			FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
 			)
 			');
+
+        DB::statement("
+			CREATE TABLE reports (
+				id INT AUTO_INCREMENT PRIMARY KEY,
+				entity_id INT NOT NULL,
+				entity_type ENUM('post', 'comment', 'account') NOT NULL,
+				reporter_id INT NOT NULL,
+				reason ENUM('spam', 'harassment', 'hate speech', 'violence', 'fake news', 'other') NOT NULL,
+				description TEXT,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (reporter_id) REFERENCES accounts(id) ON DELETE CASCADE
+			)
+		");
     }
 
     public function down(): void
     {
+        DB::statement('DROP TABLE IF EXISTS reports');
         DB::statement('DROP TABLE IF EXISTS admin_activities');
         DB::statement('DROP TABLE IF EXISTS deleted_admins');
         DB::statement('DROP TABLE IF EXISTS admin_permissions');

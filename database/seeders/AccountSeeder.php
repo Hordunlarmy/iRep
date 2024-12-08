@@ -12,6 +12,14 @@ class AccountSeeder extends Seeder
     {
         $accountsData = [
             [
+                'name' => 'iREP',
+                'email' => 'news@irep.com',
+                'password' => bcrypt('irep6565'),
+                'photo_url' => 'https://i.imgur.com/HH3yXoK.png',
+                'account_type' => 3,
+                'email_verified' => true
+            ],
+            [
                 'name' => 'John Doe',
                 'email' => 'john.doe@example.com',
                 'phone_number' => '08012345678',

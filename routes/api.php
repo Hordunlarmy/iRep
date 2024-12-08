@@ -10,6 +10,7 @@ use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NewsFeedController;
 use App\Admin\Controllers\AdminController;
 use App\Admin\Controllers\UserManagementController;
+use App\Admin\Controllers\ContentModerationController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,6 +46,8 @@ Route::group([
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('/civilians/dashboard', [UserManagementController::class, 'getCivilianCounts'])->name('admin.civilianCounts');
         Route::get('/representatives/dashboard', [UserManagementController::class, 'getRepresentativeCounts'])->name('admin.representativeCounts');
+        Route::get('/petitions/dashboard', [ContentModerationController::class, 'petitionStats'])->name('admin.petitionStats');
+        Route::get('/contents', [ContentModerationController::class, 'getContents'])->name('admin.contents');
         Route::get('/civilians', [UserManagementController::class, 'getCivilians'])->name('admin.civilians');
         Route::get('/representatives', [UserManagementController::class, 'getRepresentatives'])->name('admin.representatives');
         Route::post('/accounts/approve/{accountId}', [UserManagementController::class, 'approveAccount'])->name('admin.approve');
@@ -52,6 +55,7 @@ Route::group([
         Route::post('/accounts/suspend/{accountId}', [UserManagementController::class, 'suspendAccount'])->name('admin.suspend');
         Route::post('/accounts/reinstate/{accountId}', [UserManagementController::class, 'reinstateAccount'])->name('admin.reinstate');
         Route::delete('/accounts/delete/{accountId}', [UserManagementController::class, 'deleteAccount'])->name('admin.delete');
+        Route::get('/accounts/{accountId}', [UserManagementController::class, 'showAccount'])->name('admin.account');
     });
 });
 

@@ -44,5 +44,50 @@ class AdminDataSeeder extends Seeder
         ];
 
         DB::table('admin_activities')->insert($adminActivities);
+
+        $reportData = [
+        [
+            'entity_id' => 1,
+            'entity_type' => 'post',
+            'reporter_id' => 1,
+            'reason' => 'spam',
+            'description' => 'Post with ID 1 has been reported for containing spam content',
+            'created_at' => now(),
+        ],
+        [
+            'entity_id' => 2,
+            'entity_type' => 'comment',
+            'reporter_id' => 2,
+            'reason' => 'harassment',
+            'description' => 'Comment with ID 2 has been reported for harassment',
+            'created_at' => now(),
+        ],
+        [
+            'entity_id' => 3,
+            'entity_type' => 'account',
+            'reporter_id' => 3,
+            'reason' => 'hate speech',
+            'description' => 'Account with ID 3 has been reported for hate speech',
+            'created_at' => now(),
+        ],
+        [
+            'entity_id' => 4,
+            'entity_type' => 'post',
+            'reporter_id' => 4,
+            'reason' => 'fake news',
+            'description' => 'Post with ID 4 has been reported for spreading fake news',
+            'created_at' => now(),
+        ],
+        [
+            'entity_id' => 5,
+            'entity_type' => 'comment',
+            'reporter_id' => 5,
+            'reason' => 'violence',
+            'description' => 'Comment with ID 5 has been reported for promoting violence',
+            'created_at' => now(),
+        ]
+    ];
+
+        DB::table('reports')->insert($reportData);
     }
 }

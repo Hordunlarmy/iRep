@@ -94,4 +94,15 @@ class AccountResource extends JsonResource
         return $profileArray;
     }
 
+    public function toAdminViewArray($request)
+    {
+        $responseArray = $this->toProfileArray($request);
+
+        $fullResponseArray = $this->toArray($request);
+
+        $responseArray['kyc_files'] = $fullResponseArray['kyc'] ?? [];
+
+        return $responseArray;
+    }
+
 }

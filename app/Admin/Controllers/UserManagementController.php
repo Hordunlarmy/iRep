@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Admin\Factories\UserManagementFactory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use App\Http\Resources\AccountResource;
 
 class UserManagementController extends Controller
 {
@@ -13,6 +14,7 @@ class UserManagementController extends Controller
 
     public function __construct(UserManagementFactory $userManagementFactory)
     {
+        parent::__construct();
         $this->userManagementFactory = $userManagementFactory;
     }
 
@@ -84,5 +86,17 @@ class UserManagementController extends Controller
         return response()->json($account);
     }
 
+    public function showAccount($accountId, Request $request)
+    {
+        if (!is_int($accountId) && !ctype_digit($accountId)) {
+            return response()->json([
+                'message' => 'Invalid ID. The ID must be an integer.'
+            ], 400);
+        }
 
+        $account = $this->findEntity('account', $accountId);
+
+        return response()->json((new AccountResource($account))->toAdminViewArray($request), 200);
+
+    }
 }

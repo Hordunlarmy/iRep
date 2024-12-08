@@ -52,6 +52,7 @@ class PostFactory extends CommentFactory
                 'context' => $fetchedPost->context,
                 'media' => $fetchedPost->media,
                 'post_type' => $fetchedPost->post_type,
+                'author_photo' => $fetchedPost->author_photo,
                 'author' => $fetchedPost->author,
                 'author_id' => $fetchedPost->author_id,
                 'target_representative' => $postData['target_representative'] ?? null,
@@ -91,6 +92,7 @@ class PostFactory extends CommentFactory
 		p.media,
 		p.post_type,
 		a.name AS author,
+		a.photo_url AS author_photo,
 		a.kyced AS author_kyced,
 		a.account_type AS author_account_type,
 		a.id AS author_id,
@@ -139,6 +141,7 @@ class PostFactory extends CommentFactory
 			a.kyced AS author_kyced,
 			a.account_type AS author_account_type,
 			a.id AS author_id,
+			a.photo_url AS author_photo,
 			p.created_at,
 			CASE
 				WHEN p.post_type = 'petition' THEN JSON_OBJECT(

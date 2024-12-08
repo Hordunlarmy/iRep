@@ -17,6 +17,7 @@ return new class () extends Migration {
 			context TEXT NOT NULL,
 			media JSON DEFAULT NULL,
 			creator_id INT NOT NULL,
+			status ENUM('active', 'inactive') DEFAULT 'active',
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			FOREIGN KEY (creator_id) REFERENCES accounts(id) ON DELETE CASCADE
