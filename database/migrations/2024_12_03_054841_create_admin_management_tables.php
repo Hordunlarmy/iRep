@@ -9,6 +9,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
+        // Create admins table
         DB::statement("
 			CREATE TABLE admins (
 			id INT AUTO_INCREMENT PRIMARY KEY,
@@ -21,8 +22,9 @@ return new class () extends Migration {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 			)
-		");
+			");
 
+        // Create permissions table
         DB::statement('
 			CREATE TABLE permissions (
 			id INT AUTO_INCREMENT PRIMARY KEY,
@@ -30,8 +32,9 @@ return new class () extends Migration {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 			)
-		');
+			');
 
+        // Create admin_permissions table
         DB::statement('
 			CREATE TABLE admin_permissions (
 			id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,14 +46,35 @@ return new class () extends Migration {
 			FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
 			UNIQUE (admin_id, permission_id)
 			)
+			');
+
+        // Create deleted_admins table to track deleted admins
+        DB::statement('
+			CREATE TABLE deleted_entities (
+				id INT AUTO_INCREMENT PRIMARY KEY,
+				entity_id INT NOT NULL,
+				entity_type ENUM("admin", "account") NOT NULL,
+				deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			)
 		');
+
+        // Create admin_activities table to track admin activities
+        DB::statement('
+			CREATE TABLE admin_activities (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			admin_id INT NOT NULL,
+			activity_type VARCHAR(255) NOT NULL,
+			description TEXT NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+			)
+			');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        DB::statement('DROP TABLE IF EXISTS admin_activities');
+        DB::statement('DROP TABLE IF EXISTS deleted_admins');
         DB::statement('DROP TABLE IF EXISTS admin_permissions');
         DB::statement('DROP TABLE IF EXISTS permissions');
         DB::statement('DROP TABLE IF EXISTS admins');

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class AdminDataSeeder extends Seeder
 {
@@ -13,19 +12,37 @@ class AdminDataSeeder extends Seeder
      */
     public function run(): void
     {
-        $permissionsData = [
-            [ 'name' => 'content mod' ],
-            [ 'name' => 'petitions' ],
-            [ 'name' => 'user verification' ],
-            [ 'name' => 'rep verification'],
+        $deletedAdmins = [
+            [
+                'entity_id' => 6,
+                'entity_type' => 'admin',
+            ],
+            [
+                'entity_id' => 7,
+                'entity_type' => 'admin',
+            ]
         ];
 
-        foreach ($permissionsData as $permission) {
-            try {
-                DB::table('permissions')->insert($permission);
-            } catch (\Exception $e) {
-                Log::error('Failed to insert permission: ' . $e->getMessage());
-            }
-        }
+        DB::table('deleted_entities')->insert($deletedAdmins);
+
+        $adminActivities = [
+            [
+                'admin_id' => 1,
+                'activity_type' => 'login',
+                'description' => 'Admin logged in',
+            ],
+            [
+                'admin_id' => 1,
+                'activity_type' => 'update',
+                'description' => 'Updated user profile',
+            ],
+            [
+                'admin_id' => 2,
+                'activity_type' => 'delete',
+                'description' => 'Deleted user account with ID 10',
+            ]
+        ];
+
+        DB::table('admin_activities')->insert($adminActivities);
     }
 }

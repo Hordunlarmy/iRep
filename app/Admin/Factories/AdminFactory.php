@@ -88,6 +88,7 @@ class AdminFactory
 		SELECT
 			a.id,
 			a.username,
+			a.photo_url,
 			a.account_type,
 			COALESCE(
 				JSON_ARRAYAGG(
@@ -98,7 +99,8 @@ class AdminFactory
 		FROM admins a
 		LEFT JOIN admin_permissions ap ON a.id = ap.admin_id
 		LEFT JOIN permissions p ON ap.permission_id = p.id
-		WHERE a.account_type = 3";
+		WHERE a.account_type = 3
+		AND a.id NOT IN (SELECT entity_id FROM deleted_entities)";
 
         $params = [];
 
@@ -118,7 +120,7 @@ class AdminFactory
             $params = array_merge($params, $permissionFilters);
         }
 
-        $query .= " GROUP BY a.id, a.username, a.password, a.account_type";
+        $query .= " GROUP BY a.id, a.photo_url, a.username, a.password, a.account_type";
 
         $page = $filter['page'] ?? 1;
         $pageSize = $filter['page_size'] ?? 10;
@@ -162,7 +164,8 @@ class AdminFactory
 		FROM admins a
 		LEFT JOIN admin_permissions ap ON a.id = ap.admin_id
 		LEFT JOIN permissions p ON ap.permission_id = p.id
-		WHERE a.account_type = 3";
+		WHERE a.account_type = 3
+		AND a.id NOT IN (SELECT entity_id FROM deleted_entities)";
 
         if (isset($filter['account_type'])) {
             $countQuery .= " AND a.account_type = ?";
@@ -179,4 +182,52 @@ class AdminFactory
         $countStmt->execute($params);
         return $countStmt->fetchColumn();
     }
+
+    public function getAdminCounts()
+    {
+        $stmt = $this->db->query("SELECT name FROM permissions");
+        $permissions = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        if (empty($permissions)) {
+            return [];
+        }
+
+        $selectQueries = [];
+        $params = [];
+
+        // General count of all admins
+        $selectQueries[] = "COUNT(DISTINCT a.id) AS all_admins";
+
+        // Dynamically add counts for each permission
+        foreach ($permissions as $permission) {
+            $permissionAlias = str_replace(' ', '_', $permission);
+            $selectQueries[] = "
+			CAST(SUM(CASE WHEN p.name = ? THEN 1 ELSE 0 END) AS SIGNED) AS `{$permissionAlias}`";
+            $params[] = $permission;
+        }
+
+        // Add count of deleted admins
+        $selectQueries[] = "
+			(SELECT COUNT(*)
+			 FROM deleted_entities
+			 WHERE deleted_entities.entity_type = 'admin') AS deleted_admins
+		";
+        // Construct the full SQL query
+        $query = "
+			SELECT
+				" . implode(', ', $selectQueries) . "
+			FROM admins a
+			LEFT JOIN admin_permissions ap ON a.id = ap.admin_id
+			LEFT JOIN permissions p ON ap.permission_id = p.id
+			WHERE a.account_type = 3
+		";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
+
+        return $result;
+    }
+
 }

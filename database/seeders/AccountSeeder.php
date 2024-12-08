@@ -20,6 +20,7 @@ class AccountSeeder extends Seeder
                 'local_government_id' => 647,
                 'location' => '12, Lagos Street, Abeokuta',
                 'email_verified' => true,
+                'kyc' => json_encode(['url' => 'https://example.com/kyc/johndoe']),
                 'password' => bcrypt('password456'),
             ],
             [
@@ -31,6 +32,7 @@ class AccountSeeder extends Seeder
                 'local_government_id' => 597,
                 'location' => '45, Ikorodu Road, Lagos',
                 'email_verified' => false,
+                'kyc' => json_encode(['url' => 'https://example.com/kyc/janesmith']),
                 'password' => bcrypt('password456'),
             ],
             [
@@ -42,6 +44,7 @@ class AccountSeeder extends Seeder
                 'local_government_id' => 740,
                 'location' => '23, Ring Road, Ibadan',
                 'email_verified' => true,
+                'kyc' => json_encode(['url' => 'https://example.com/kyc/michaeljohnson']),
                 'password' => bcrypt('password456'),
             ],
         ];
