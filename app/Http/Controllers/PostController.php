@@ -7,6 +7,7 @@ use App\Http\Requests\CreatePostRequest;
 use App\Http\Requests\CommentRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PostResource;
+use App\Jobs\SendNotification;
 
 class PostController extends Controller
 {
@@ -78,7 +79,7 @@ class PostController extends Controller
 
     public function signPetition($id, CommentRequest $request)
     {
-        Controller::findEntity('post', $id);
+        $entityData = $this->findEntity('post', $id);
 
         if ($this->postFactory->hasUserSigned($id, Auth::id())) {
             return response()->json(['message' => 'You have already signed this post'], 400);
@@ -89,12 +90,22 @@ class PostController extends Controller
 
         $status = $this->postFactory->insertSignature($id, Auth::id(), $comment);
 
+        $notificationData = [
+            'entity_id' => $id,
+            'account_id' => $entityData->author_id,
+            'title' => 'New signature on your petition',
+            'body' => Auth::user()->name . ' signed your petition',
+        ];
+
+        SendNotification::dispatch('petition', $notificationData);
+
+
         return response()->json(['message' => 'success', 'status' => $status]);
     }
 
     public function approveReport($id, CommentRequest $request)
     {
-        Controller::findEntity('post', $id);
+        $entityData = $this->findEntity('post', $id);
 
         if ($this->postFactory->hasUserApproved($id, Auth::id())) {
             return response()->json(['message' => 'You have already approved this report'], 400);
@@ -104,6 +115,15 @@ class PostController extends Controller
         $comment = $validatedData['comment'];
 
         $this->postFactory->insertApproval($id, Auth::id(), $comment);
+
+        $notificationData = [
+            'entity_id' => $id,
+            'account_id' => $entityData->author_id,
+            'title' => 'New approval on your report',
+            'body' => Auth::user()->name . ' approved your report',
+        ];
+
+        SendNotification::dispatch('report', $notificationData);
 
         return response()->json(['message' => 'success']);
     }

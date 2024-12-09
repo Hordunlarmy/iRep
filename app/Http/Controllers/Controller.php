@@ -111,6 +111,7 @@ abstract class Controller extends BaseController
                 'body'       => str_replace('{entity}', $entityType, $notificationTemplate['body']),
             ];
 
+            \Illuminate\Support\Facades\Log::info('Notification data: ' . json_encode($notification));
             SendNotification::dispatch($entity, $notification);
         }
 
@@ -142,6 +143,4 @@ abstract class Controller extends BaseController
 
         return $data;
     }
-
-
 }

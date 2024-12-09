@@ -98,20 +98,25 @@ Route::group([
 
 Route::group([
     'prefix' => 'posts',
-    'middleware' => ['auth:api', 'activated']
 ], function () {
-    Route::get('/', [HomePageController::class, 'postsIndex'])->name('postsIndex');
-    Route::post('/', [PostController::class, 'create'])->name('post.create');
-    Route::get('/{id}', [PostController::class, 'show'])->name('post.show');
-    Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
-    Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
-    Route::post('{id}/like', [PostController::class, 'like'])->name('post.like');
-    Route::post('{id}/repost', [PostController::class, 'repost'])->name('post.repost');
-    Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('post.bookmark');
-    Route::get('/{id}/share', [PostController::class, 'share'])->name('post.share');
 
-    Route::post('/{postId}/comment/{commentId?}', [CommentController::class, 'create'])->name('comment.create');
-    Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
+    Route::get('/{id}', [PostController::class, 'show'])->name('post.show');
+    Route::group([
+        'middleware' =>  ['auth:api', 'activated']
+    ], function () {
+
+        Route::get('/', [HomePageController::class, 'postsIndex'])->name('postsIndex');
+        Route::post('/', [PostController::class, 'create'])->name('post.create');
+        Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
+        Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
+        Route::post('{id}/like', [PostController::class, 'like'])->name('post.like');
+        Route::post('{id}/repost', [PostController::class, 'repost'])->name('post.repost');
+        Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('post.bookmark');
+        Route::get('/{id}/share', [PostController::class, 'share'])->name('post.share');
+
+        Route::post('/{postId}/comment/{commentId?}', [CommentController::class, 'create'])->name('comment.create');
+        Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
+    });
 
 });
 

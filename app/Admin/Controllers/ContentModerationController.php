@@ -30,7 +30,7 @@ class ContentModerationController extends Controller
     {
         try {
             $criteria = $request->only(['page', 'page_size', 'states', 'status',
-            'reported']);
+            'reported', 'post_type']);
             $result = $this->contentModerationFactory->getContents($criteria);
 
             $posts = $result['data'];

@@ -30,6 +30,7 @@ class SendNotification implements ShouldQueue
         $accountId = $this->data['account_id'] ?? null;
         $title = $this->data['title'] ?? '';
         $body = $this->data['body'] ?? '';
+        $entityId = $this->data['entity_id'] ?? null;
 
         if (!$accountId) {
             return;
@@ -45,6 +46,7 @@ class SendNotification implements ShouldQueue
 
         $notificationId = DB::table('account_notifications')->insertGetId([
             'account_id' => $accountId,
+            'entity_id' => $entityId,
             'type' => $this->notificationType,
             'title' => $title,
             'body' => $body,

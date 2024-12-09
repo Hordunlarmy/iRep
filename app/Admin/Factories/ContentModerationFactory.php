@@ -97,7 +97,8 @@ class ContentModerationFactory
                 WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
                     'approvals', ew.approvals,
                     'category', ew.category
-                )
+				)
+				ELSE NULL
             END AS post_data
         FROM posts p
         LEFT JOIN petitions pe ON p.id = pe.post_id

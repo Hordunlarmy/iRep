@@ -13,6 +13,7 @@ return new class () extends Migration {
 			CREATE TABLE account_notifications (
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			account_id INT,
+			entity_id INT,
 			type VARCHAR(255) NOT NULL,
 			title VARCHAR(255) NOT NULL,
 			body TEXT NOT NULL,

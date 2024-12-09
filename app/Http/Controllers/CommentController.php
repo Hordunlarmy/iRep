@@ -20,16 +20,17 @@ class CommentController extends Controller
             $validatedData['parentId'] = $commentId;
 
             $commentId = $this->commentFactory->insertComment($validatedData);
-            $comment = $this->findEntity('comment', $commentId);
+            $entityData = $this->findEntity('post', $postId);
 
             $notificationData = [
                 'entity_id' => $commentId,
-                'account_id' => $comment->account_id,
-                'post_id' => $comment->post_id,
-                'parent_id' => $comment->parent_id,
+                'account_id' => $entityData->author_id,
+                'post_id' => $postId,
                 'title' => 'New comment on your post',
                 'body' => Auth::user()->name . ' commented on your post',
             ];
+
+            \Illuminate\Support\Facades\Log::info('Comment notification data: ' . json_encode($notificationData));
 
             SendNotification::dispatch('comment', $notificationData);
 

@@ -27,8 +27,9 @@ class SendMessage implements ShouldQueue
 
         $notification = [
             'account_id' => $this->message->receiverId,
+            'entity_id' => $this->message->id,
             'title' => 'New Message',
-            'body' => 'You have a new message from Account ID ' . $this->message->senderId,
+            'body' => 'You have a new message ' . $this->message->senderId,
         ];
 
         SendNotification::dispatch("message", $notification);
