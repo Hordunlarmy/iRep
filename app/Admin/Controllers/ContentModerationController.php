@@ -45,6 +45,17 @@ class ContentModerationController extends Controller
         }
     }
 
+    public function getContent($id, Request $request)
+    {
+        try {
+            $post = Controller::findEntity('post', $id);
+            return response()->json((new PostResource($post))->toDetailArray($request), 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch post ' . $e->getMessage()], 500);
+        }
+    }
+
+
     public function deletePetition($id)
     {
         try {

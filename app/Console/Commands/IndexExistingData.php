@@ -83,17 +83,22 @@ class IndexExistingData extends Command
 				SELECT p.id, p.title, p.context, p.post_type, p.media,
 				a.name AS author,
 				a.id AS author_id,
+				a.photo_url AS author_photo,
+				a.kyced AS author_kyced,
+				a.account_type AS author_account_type,
 				rep.name AS target_representative,
 				pe.status,
 				pe.signatures,
 				pe.target_signatures,
 				ewr.category,
-				p.created_at
+				p.created_at,
+				r.reason AS reported
 				FROM posts p
 				LEFT JOIN petitions pe ON p.id = pe.post_id
 				LEFT JOIN eye_witness_reports ewr ON p.id = ewr.post_id
 				LEFT JOIN accounts a ON p.creator_id = a.id
 				LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
+				LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
 			");
 
             $postsDataArray = json_decode(json_encode($postsData), true);

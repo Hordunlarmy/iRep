@@ -42,14 +42,14 @@ class PostResource extends JsonResource
             'post_type' => $data->post_type,
             'author' => $data->author,
             'author_badge' => $badge,
+            'reported' => $data->reported,
+            'status' => $postData->status ?? null,
             'created_at' => $data->created_at,
             'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
             'comments' => $commentCount,
             'likes' => $likesCount,
             'reposts' => $repostsCount,
             'bookmarks' => $bookmarksCount,
-            'reported' => $data->reported ?? null,
-            'status' => $data->status ?? null,
         ];
 
         if ($data->post_type === 'petition') {

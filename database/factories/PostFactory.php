@@ -57,6 +57,7 @@ class PostFactory extends CommentFactory
                 'author_id' => $fetchedPost->author_id,
                 'target_representative' => $postData['target_representative'] ?? null,
                 'status' => $postData['status'] ?? null,
+                'reported' => $fetchedPost->reported ?? null,
                 'signatures' => $postData['signatures'] ?? null,
                 'target_signatures' => $postData['target_signatures'] ?? null,
                 'category' => $postData['category'] ?? null,
@@ -96,6 +97,8 @@ class PostFactory extends CommentFactory
 		a.kyced AS author_kyced,
 		a.account_type AS author_account_type,
 		a.id AS author_id,
+		r.reason AS reported,
+		p.status AS post_status,
 		p.created_at,
 		CASE
 		WHEN p.post_type = 'petition' THEN JSON_OBJECT(
@@ -114,6 +117,7 @@ class PostFactory extends CommentFactory
 		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
 		LEFT JOIN accounts a ON p.creator_id = a.id
 		LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
+		LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
 		WHERE p.id = ?";
 
         $stmt = $this->db->prepare($query);
@@ -142,6 +146,8 @@ class PostFactory extends CommentFactory
 			a.account_type AS author_account_type,
 			a.id AS author_id,
 			a.photo_url AS author_photo,
+			r.reason AS reported,
+			p.status AS post_status,
 			p.created_at,
 			CASE
 				WHEN p.post_type = 'petition' THEN JSON_OBJECT(
@@ -160,6 +166,7 @@ class PostFactory extends CommentFactory
 		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
 		LEFT JOIN accounts a ON p.creator_id = a.id
 		LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
+		LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
 		WHERE 1=1";
 
         list($query, $params) = $this->applyFilters($query, $params, $criteria);

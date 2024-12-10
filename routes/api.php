@@ -50,6 +50,7 @@ Route::group([
         Route::get('/contents', [ContentModerationController::class, 'getContents'])->name('admin.contents');
         Route::get('/civilians', [UserManagementController::class, 'getCivilians'])->name('admin.civilians');
         Route::get('/representatives', [UserManagementController::class, 'getRepresentatives'])->name('admin.representatives');
+        Route::get('/contents/{id}', [ContentModerationController::class, 'getContent'])->name('admin.content');
         Route::delete('/reports/{id}', [ContentModerationController::class, 'deleteReport'])->name('admin.deleteReport');
         Route::delete('/petitions/{id}', [ContentModerationController::class, 'deletePetition'])->name('admin.deletePetition');
         Route::post('/petitions/ignore/{id}', [ContentModerationController::class, 'ignorePetition'])->name('admin.ignorePetition');
