@@ -44,4 +44,49 @@ class ContentModerationController extends Controller
             return response()->json(['error' => 'Failed to fetch posts ' . $e->getMessage()], 500);
         }
     }
+
+    public function deletePetition($id)
+    {
+        try {
+            $result = $this->contentModerationFactory->deletePost($id, 'petition');
+
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete petition ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteReport($id)
+    {
+        try {
+            $result = $this->contentModerationFactory->deletePost($id, 'eyewitness');
+
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete report ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function ignorePetition($id)
+    {
+        try {
+            $result = $this->contentModerationFactory->ignorePost($id, 'petition');
+
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to ignore petition ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function ignoreReport($id)
+    {
+        try {
+            $result = $this->contentModerationFactory->ignorePost($id, 'eyewitness');
+
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to ignore report ' . $e->getMessage()], 500);
+        }
+    }
+
 }

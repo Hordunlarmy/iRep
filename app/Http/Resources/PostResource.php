@@ -48,6 +48,8 @@ class PostResource extends JsonResource
             'likes' => $likesCount,
             'reposts' => $repostsCount,
             'bookmarks' => $bookmarksCount,
+            'reported' => $data->reported ?? null,
+            'status' => $data->status ?? null,
         ];
 
         if ($data->post_type === 'petition') {

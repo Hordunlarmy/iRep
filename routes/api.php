@@ -50,6 +50,10 @@ Route::group([
         Route::get('/contents', [ContentModerationController::class, 'getContents'])->name('admin.contents');
         Route::get('/civilians', [UserManagementController::class, 'getCivilians'])->name('admin.civilians');
         Route::get('/representatives', [UserManagementController::class, 'getRepresentatives'])->name('admin.representatives');
+        Route::delete('/reports/{id}', [ContentModerationController::class, 'deleteReport'])->name('admin.deleteReport');
+        Route::delete('/petitions/{id}', [ContentModerationController::class, 'deletePetition'])->name('admin.deletePetition');
+        Route::post('/petitions/ignore/{id}', [ContentModerationController::class, 'ignorePetition'])->name('admin.ignorePetition');
+        Route::post('/reports/ignore/{id}', [ContentModerationController::class, 'ignoreReport'])->name('admin.ignoreReport');
         Route::post('/accounts/approve/{accountId}', [UserManagementController::class, 'approveAccount'])->name('admin.approve');
         Route::post('/accounts/decline/{accountId}', [UserManagementController::class, 'declineAccount'])->name('admin.decline');
         Route::post('/accounts/suspend/{accountId}', [UserManagementController::class, 'suspendAccount'])->name('admin.suspend');
