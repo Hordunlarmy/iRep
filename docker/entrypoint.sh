@@ -52,6 +52,10 @@ php artisan reverb:start --debug &
 echo "Starting Laravel queue worker..."
 php artisan queue:work --daemon &
 
+# Tail the Laravel log
+echo "Tailing Laravel log..."
+tail -f storage/logs/laravel.log &
+
 # Run the Laravel application using artisan serve
 echo "Starting Laravel application..."
 exec php artisan serve --host=0.0.0.0 --port="$PORT"
