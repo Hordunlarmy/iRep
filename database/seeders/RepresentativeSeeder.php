@@ -51,7 +51,7 @@ class RepresentativeSeeder extends Seeder
 
                 // Insert account data
                 $account_id = DB::table('accounts')->insertGetId([
-                    'photo_url' => null,
+                    'photo_url' => "https://i.imgur.com/0GY9tnz.jpeg",
                     'name' => $name,
                     'email' => $email,
                     'phone_number' => $phone_number,
