@@ -22,11 +22,8 @@ return new class () extends Migration {
             ['id' => 1, 'name' => 'citizen'],
             ['id' => 2, 'name' => 'representative'],
             ['id' => 3, 'name' => 'admin'],
+            ['id' => 4, 'name' => 'super_admin']
         ]);
-        DB::table('account_types')->updateOrInsert(
-            ['id' => 4],
-            ['name' => 'super_admin']
-        );
 
         // Create the states table
         DB::statement("
@@ -166,11 +163,10 @@ return new class () extends Migration {
      */
     public function down()
     {
-        // Drop tables in the correct order
+        // Drop foreign key constraints in the correct order
         DB::statement("DROP TABLE IF EXISTS sessions");
         DB::statement("DROP TABLE IF EXISTS verification_tokens");
         DB::statement("DROP TABLE IF EXISTS representatives");
-        DB::statement("DROP TABLE IF EXISTS citizens");
         DB::statement("DROP TABLE IF EXISTS accounts");
         DB::statement("DROP TABLE IF EXISTS parties");
         DB::statement("DROP TABLE IF EXISTS positions");
