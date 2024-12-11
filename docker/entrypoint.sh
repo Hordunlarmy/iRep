@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Replace DB_HOST and DB_PORT in the .env file
-sed -i "s/DB_HOST=.*/DB_HOST=database/" .env
-sed -i "s/DB_PORT=.*/DB_PORT=3306/" .env
-
 # Install Composer dependencies if not already installed
 if [ ! -d "vendor" ]; then
 	composer install
