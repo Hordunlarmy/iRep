@@ -1,0 +1,7 @@
+build:
+  docker:
+    web: docker/Dockerfile
+
+run:
+  web: /usr/local/bin/entrypoint.sh
+

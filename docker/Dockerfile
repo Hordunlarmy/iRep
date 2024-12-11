@@ -28,7 +28,7 @@ COPY . .
 RUN composer install
 
 # Expose the port for the Laravel application
-EXPOSE 8000
+EXPOSE 8000 8080
 
 # Copy Supervisor config file and entrypoint script into the image
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
