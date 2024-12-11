@@ -3,10 +3,10 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - odun-dev
+      - deploy
   pull_request:
     branches:
-      - odun-dev
+      - deploy
   workflow_dispatch:
 
 jobs:
