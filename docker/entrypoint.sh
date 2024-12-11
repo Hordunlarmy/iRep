@@ -10,7 +10,7 @@ if [ ! -d "vendor" ]; then
 fi
 
 # Run Laravel migrate and seed database
-php artisan migrate:refresh --seed --force
+#php artisan migrate:refresh --seed --force
 
 # Run Laravel migration and seeder gracefully
 if ! php artisan migrate --force; then
@@ -30,9 +30,9 @@ if ! php artisan create:superadmin "irep" "password"; then
 	echo "Creating superadmin failed, proceeding without stopping the container..."
 fi
 
-# if ! php artisan news:fetch; then
-# 	echo "Fetching and Indexing news failed, proceeding without stopping the container..."
-# fi
+if ! php artisan news:fetch; then
+	echo "Fetching and Indexing news failed, proceeding without stopping the container..."
+fi
 
 # Clear the cache, routes, config, and views
 php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear
