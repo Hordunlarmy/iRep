@@ -83,7 +83,7 @@ class IndexExistingData extends Command
 				SELECT p.id, p.title, p.context, p.post_type, p.media,
 				a.name AS author,
 				a.id AS author_id,
-				a.photo_url AS author_photo,
+				a.photo_url AS author_photo_url,
 				a.kyced AS author_kyced,
 				a.account_type AS author_account_type,
 				rep.name AS target_representative,
