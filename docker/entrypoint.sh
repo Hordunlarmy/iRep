@@ -26,9 +26,9 @@ if ! php artisan create:superadmin "irep" "password"; then
 	echo "Creating superadmin failed, proceeding without stopping the container..."
 fi
 
-if ! php artisan news:fetch; then
-	echo "Fetching and Indexing news failed, proceeding without stopping the container..."
-fi
+#if ! php artisan news:fetch; then
+#	echo "Fetching and Indexing news failed, proceeding without stopping the container..."
+#fi
 
 # Clear the cache, routes, config, and views
 php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear
