@@ -42,7 +42,7 @@ php artisan route:clear && php artisan config:clear && php artisan cache:clear &
 
 # Start Reverb for broadcasting
 echo "Starting Reverb server..."
-php artisan reverb:start --debug --port=8090
+php artisan reverb:start --debug --port=8090 &
 
 # Start Laravel queue worker
 echo "Starting Laravel queue worker..."
