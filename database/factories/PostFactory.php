@@ -53,6 +53,7 @@ class PostFactory extends CommentFactory
                 'media' => $fetchedPost->media,
                 'post_type' => $fetchedPost->post_type,
                 'author_photo' => $fetchedPost->author_photo,
+                'author_kyced' => $fetchedPost->author_kyced,
                 'author' => $fetchedPost->author,
                 'author_id' => $fetchedPost->author_id,
                 'target_representative' => $postData['target_representative'] ?? null,
@@ -307,16 +308,16 @@ class PostFactory extends CommentFactory
             $this->db->beginTransaction();
 
             $query = "
-		INSERT INTO petition_signatures (post_id, account_id)
-		VALUES (?, ?)";
+            INSERT INTO petition_signatures (post_id, account_id)
+            VALUES (?, ?)";
 
             $stmt = $this->db->prepare($query);
             $stmt->execute([$postId, $accountId]);
 
             $incrementQuery = "
-		UPDATE petitions
-		SET signatures = signatures + 1
-		WHERE post_id = ?";
+            UPDATE petitions
+            SET signatures = signatures + 1
+            WHERE post_id = ?";
 
             $incrementStmt = $this->db->prepare($incrementQuery);
             $incrementStmt->execute([$postId]);
@@ -330,9 +331,9 @@ class PostFactory extends CommentFactory
                 $this->insertComment($data);
             }
 
-            $status = $this->checkAndUpdatePetitionStatus($postId);
-
             $this->db->commit();
+
+            $status = $this->checkAndUpdatePetitionStatus($postId);
 
             return $status;
         } catch (\PDOException $e) {

@@ -42,6 +42,7 @@ class PostResource extends JsonResource
             'post_type' => $data->post_type,
             'author' => $data->author,
             'author_badge' => $badge,
+            'author_photo' => $data->author_photo,
             'reported' => $data->reported,
             'status' => $postData->status ?? null,
             'created_at' => $data->created_at,
