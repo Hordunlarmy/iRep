@@ -61,6 +61,22 @@ class AdminFactory
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getAdminPermissionsByUsername(string $username): array
+    {
+        $query = "
+        SELECT p.id
+        FROM permissions p
+        JOIN admin_permissions ap ON p.id = ap.permission_id
+        JOIN admins a ON ap.admin_id = a.id
+        WHERE a.username = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$username]);
+
+        $permissions = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        return $permissions;
+    }
+
     public function getAdmin(string $username = null, int $id = null): ?Admin
     {
         $query = "
@@ -229,5 +245,51 @@ class AdminFactory
 
         return $result;
     }
+
+    public function getActivity(int $activityId)
+    {
+        $query = "
+        SELECT
+        aa.id,
+        aa.admin_id,
+        aa.entity_type,
+        aa.entity_id,
+        aa.action,
+        aa.description,
+        aa.created_at,
+        a.username AS admin_username,
+        a.photo_url AS admin_photo,
+        e.username AS entity_username,
+        e.photo_url AS entity_photo,
+        CASE
+            WHEN aa.entity_type = 'account' THEN JSON_OBJECT(
+                'email_verified', ac.email_verified,
+                'phone_verified', ac.phone_verified,
+                'account_type', ac.account_type
+            )
+            WHEN aa.entity_type = 'post' THEN JSON_OBJECT(
+                'title', p.title,
+                'context', p.context,
+                'status', p.status
+            )
+            WHEN aa.entity_type = 'comment' THEN JSON_OBJECT(
+                'content', c.content,
+                'status', c.status
+            )
+        END AS entity_data
+        FROM admin_activities aa
+        LEFT JOIN admins a ON aa.admin_id = a.id
+        LEFT JOIN accounts e ON aa.entity_id = e.id AND aa.entity_type = 'account'
+        LEFT JOIN posts p ON aa.entity_id = p.id AND aa.entity_type = 'post'
+        LEFT JOIN comments c ON aa.entity_id = c.id AND aa.entity_type = 'comment'
+        LEFT JOIN accounts ac ON e.id = ac.id
+        WHERE aa.id = ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$activityId]);
+
+        return $stmt->fetchObject();
+    }
+
 
 }

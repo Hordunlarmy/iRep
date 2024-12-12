@@ -51,20 +51,22 @@ return new class () extends Migration {
         // Create deleted_admins table to track deleted admins
         DB::statement('
 			CREATE TABLE deleted_entities (
-				id INT AUTO_INCREMENT PRIMARY KEY,
-				entity_id INT NOT NULL,
-				entity_type ENUM("admin", "account") NOT NULL,
-				deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			entity_id INT NOT NULL,
+			entity_type ENUM("admin", "account") NOT NULL,
+			deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			)
-		');
+			');
 
         // Create admin_activities table to track admin activities
         DB::statement('
 			CREATE TABLE admin_activities (
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			admin_id INT NOT NULL,
-			activity_type VARCHAR(255) NOT NULL,
-			description TEXT NOT NULL,
+			entity_type ENUM("account", "post", "comment", "admin") NOT NULL,
+			entity_id INT NOT NULL,
+			action VARCHAR(255) NOT NULL,
+			description TEXT,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
 			)
@@ -72,16 +74,16 @@ return new class () extends Migration {
 
         DB::statement("
 			CREATE TABLE reports (
-				id INT AUTO_INCREMENT PRIMARY KEY,
-				entity_id INT NOT NULL,
-				entity_type ENUM('post', 'comment', 'account') NOT NULL,
-				reporter_id INT NOT NULL,
-				reason ENUM('spam', 'harassment', 'hate speech', 'violence', 'fake news', 'other') NOT NULL,
-				description TEXT,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-				FOREIGN KEY (reporter_id) REFERENCES accounts(id) ON DELETE CASCADE
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			entity_id INT NOT NULL,
+			entity_type ENUM('post', 'comment', 'account') NOT NULL,
+			reporter_id INT NOT NULL,
+			reason ENUM('spam', 'harassment', 'hate speech', 'violence', 'fake news', 'other') NOT NULL,
+			description TEXT,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (reporter_id) REFERENCES accounts(id) ON DELETE CASCADE
 			)
-		");
+			");
     }
 
     public function down(): void
