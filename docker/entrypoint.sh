@@ -13,9 +13,9 @@ if ! php artisan migrate --force; then
 	echo "Migration failed, proceeding without stopping the container..."
 fi
 
-if ! php artisan db:seed --force; then
-	echo "Seeding failed, proceeding without stopping the container..."
-fi
+#if ! php artisan db:seed --force; then
+#	echo "Seeding failed, proceeding without stopping the container..."
+#fi
 
 # Index existing records in the database
 if ! php artisan search:index-existing; then
