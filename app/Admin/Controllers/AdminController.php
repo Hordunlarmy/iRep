@@ -64,6 +64,7 @@ class AdminController extends Controller
         ]);
 
         $admin = $this->adminFactory->getAdmin($validatedData['username']);
+        $permissions = $this->adminFactory->getAdminPermissionsByUsername($validatedData['username']);
 
         if (!$admin || !Hash::check($validatedData['password'], $admin->password)) {
             return response()->json(['error' => 'Invalid credentials.'], 401);
@@ -73,7 +74,8 @@ class AdminController extends Controller
 
         return response()->json(array_merge(
             $this->tokenResponse($token)->original,
-            ['account_type' => $admin->account_type]
+            ['account_type' => $admin->account_type],
+            ['permissions' => $permissions]
         ));
     }
 

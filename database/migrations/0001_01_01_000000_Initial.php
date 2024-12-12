@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
     /**
@@ -164,15 +165,24 @@ return new class () extends Migration {
     public function down()
     {
         // Drop foreign key constraints in the correct order
-        DB::statement("DROP TABLE IF EXISTS sessions");
+        DB::statement("SET FOREIGN_KEY_CHECKS=0;");
+
+        // Check if the representatives table exists before dropping it
+        if (Schema::hasTable('representatives')) {
+            DB::statement("DROP TABLE IF EXISTS representatives");
+        }
+
         DB::statement("DROP TABLE IF EXISTS verification_tokens");
-        DB::statement("DROP TABLE IF EXISTS representatives");
+        DB::statement("DROP TABLE IF EXISTS sessions");
         DB::statement("DROP TABLE IF EXISTS accounts");
         DB::statement("DROP TABLE IF EXISTS parties");
+        DB::statement("DROP TABLE IF EXISTS districts");
         DB::statement("DROP TABLE IF EXISTS positions");
         DB::statement("DROP TABLE IF EXISTS constituencies");
         DB::statement("DROP TABLE IF EXISTS local_governments");
         DB::statement("DROP TABLE IF EXISTS states");
         DB::statement("DROP TABLE IF EXISTS account_types");
+
+        DB::statement("SET FOREIGN_KEY_CHECKS=1;");
     }
 };

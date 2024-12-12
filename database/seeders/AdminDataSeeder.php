@@ -28,19 +28,39 @@ class AdminDataSeeder extends Seeder
         $adminActivities = [
             [
                 'admin_id' => 1,
-                'activity_type' => 'login',
-                'description' => 'Admin logged in',
-            ],
-            [
-                'admin_id' => 1,
-                'activity_type' => 'update',
-                'description' => 'Updated user profile',
+                'entity_type' => 'account',
+                'entity_id' => 3,
+                'action' => 'Deleted',
+                'description' => 'Admin deleted account with ID 3.',
             ],
             [
                 'admin_id' => 2,
-                'activity_type' => 'delete',
-                'description' => 'Deleted user account with ID 10',
-            ]
+                'entity_type' => 'post',
+                'entity_id' => 5,
+                'action' => 'Declined',
+                'description' => 'Admin verified post with ID 5.',
+            ],
+            [
+                'admin_id' => 1,
+                'entity_type' => 'comment',
+                'entity_id' => 10,
+                'action' => 'Ignored',
+                'description' => 'Admin ignored comment with ID 10.',
+            ],
+            [
+                'admin_id' => 3,
+                'entity_type' => 'account',
+                'entity_id' => 8,
+                'action' => 'Approved',
+                'description' => 'Admin verified account with ID 8.',
+            ],
+            [
+                'admin_id' => 2,
+                'entity_type' => 'admin',
+                'entity_id' => 6,
+                'action' => 'Deleted',
+                'description' => 'Admin deleted another admin account with ID 6.',
+            ],
         ];
 
         DB::table('admin_activities')->insert($adminActivities);
