@@ -180,28 +180,22 @@ class PostController extends Controller
         return response()->json($result);
     }
 
-    public function report($id)
+    public function report($id, Request $request)
     {
-        $entityData = $this->findEntity('post', $id);
+        try {
+            $validated = $request->validate([
+                'reason' => 'required|string|exists:reports,reason',
+            ]);
 
-        if ($this->postFactory->hasUserReported($id, Auth::id())) {
-            return response()->json(['message' => 'You have already reported this post'], 400);
+            $this->reportEntity('post', $id, Auth::id(), $validated['reason']);
+
+            return response()->json(['message' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to report post ' . $e->getMessage(),
+            ], 500);
         }
-
-        $this->postFactory->insertReport($id, Auth::id());
-
-        $notificationData = [
-            'entity_id' => $id,
-            'account_id' => $entityData->author_id,
-            'title' => 'New report on your post',
-            'body' => Auth::user()->name . ' reported your post',
-        ];
-
-        SendNotification::dispatch('post', $notificationData);
-
-        return response()->json(['message' => 'success']);
     }
-
     public function share($id)
     {
         Controller::findEntity('post', $id);

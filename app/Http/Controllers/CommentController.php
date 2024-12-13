@@ -75,4 +75,34 @@ class CommentController extends Controller
         return $this->toggleAction('comment', 'bookmarks', $id);
     }
 
+    public function delete($id)
+    {
+        $comment = $this->commentFactory->getComment($id);
+
+        if ($comment->account_id !== Auth::id()) {
+            return response()->json([
+                'message' => 'You are not authorized to delete this comment.'
+            ], 403);
+        }
+
+        $this->commentFactory->deleteComment($id);
+
+        return response()->json([
+            'message' => 'Comment deleted successfully.'
+        ]);
+    }
+
+    public function report($id, Request $request)
+    {
+        try {
+            $reason = $request->input('reason');
+
+            $this->reportEntity('comment', $id, Auth::id(), $reason);
+
+            return response()->json(['message' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to report comment ' . $e->getMessage()], 500);
+        }
+    }
+
 }

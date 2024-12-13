@@ -439,21 +439,14 @@ class PostFactory extends CommentFactory
         ];
     }
 
-    public function reportEntity($entityType, $entityId, $reporterId, $reason)
-    {
-        $query = "
-		INSERT INTO reports (entity_id, entity_type, reporter_id, reason)
-		VALUES (?, ?, ?, ?)";
-
-        $stmt = $this->db->prepare($query);
-        $stmt->execute([$entityId, $entityType, $reporterId, $reason]);
-    }
 
     public function deletePost($postId)
     {
         $query = "DELETE FROM posts WHERE id = ?";
         $stmt = $this->db->prepare($query);
         $stmt->execute([$postId]);
+
+        app('search')->deleteData('posts', $postId);
     }
 
 }

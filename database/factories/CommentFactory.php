@@ -99,5 +99,13 @@ class CommentFactory
         return $stmt->fetchColumn() > 0;
     }
 
+    public function deleteComment($id)
+    {
+        $query = "
+		DELETE FROM comments
+		WHERE id = ?";
 
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$id]);
+    }
 }

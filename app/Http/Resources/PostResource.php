@@ -28,6 +28,7 @@ class PostResource extends JsonResource
             ->where('entity_id', $data->id)
             ->count() ?? 0;
 
+        $badge = 0;
         if ($data->author_kyced) {
             $accountType = (int) $data->author_account_type;
 

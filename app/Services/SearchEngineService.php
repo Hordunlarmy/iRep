@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use MeiliSearch\Client;
+use Meilisearch\Client;
+use Illuminate\Support\Facades\Log;
 
 class SearchEngineService
 {
@@ -50,9 +51,9 @@ class SearchEngineService
         $response = $index->search($query, $options)->getRaw();
 
         return $response;
-
     }
 
+    // Clear all indexes
     public function clearAllIndexes(): void
     {
         $indexes = $this->client->getIndexes();
@@ -62,10 +63,27 @@ class SearchEngineService
                 $this->client->index($index->uid)->delete();
             }
         } else {
-            echo 'No indexes found or an unexpected response format.';
+            Log::info('No indexes found or an unexpected response format.');
+            return;
         }
 
-        echo 'All indexes have been deleted successfully.';
+        Log::info('All indexes have been deleted successfully.');
     }
 
+    // Delete a specific document from an index
+    public function deleteData(string $indexName, string|int $documentId): void
+    {
+        $index = $this->client->index($indexName);
+        $index->deleteDocument($documentId);
+
+        Log::info("Document with ID {$documentId} has been deleted successfully.");
+    }
+
+    // Delete an entire index
+    public function deleteIndex(string $indexName): void
+    {
+        $this->client->deleteIndex($indexName);
+
+        Log::info("Index '{$indexName}' has been deleted successfully.");
+    }
 }

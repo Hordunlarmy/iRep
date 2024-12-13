@@ -138,6 +138,7 @@ Route::group([
         Route::post('{id}/like', [PostController::class, 'like'])->name('post.like');
         Route::post('{id}/repost', [PostController::class, 'repost'])->name('post.repost');
         Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('post.bookmark');
+        Route::post('/{id}/report', [PostController::class, 'report'])->name('post.report');
         Route::get('/{id}/share', [PostController::class, 'share'])->name('post.share');
 
         Route::post('/{postId}/comment/{commentId?}', [CommentController::class, 'create'])->name('comment.create');
@@ -154,6 +155,8 @@ Route::group([
     Route::get('/', [CommentController::class, 'index'])->name('comment.index');
     Route::post('/', [CommentController::class, 'create'])->name('parentComment.create');
     Route::get('/{id}', [CommentController::class, 'show'])->name('comment.show');
+    Route::post('/{id}/report', [CommentController::class, 'report'])->name('post.report');
+    Route::delete('/{id}', [CommentController::class, 'delete'])->name('comment.delete');
     Route::post('/{id}/like', [CommentController::class, 'like'])->name('comment.like');
 });
 
