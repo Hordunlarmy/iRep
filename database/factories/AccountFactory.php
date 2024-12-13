@@ -363,8 +363,9 @@ class AccountFactory
 
     public function fetchStatus($accountId)
     {
-        $query = 'SELECT id, email_verified, kyced, kyc, account_type
-              FROM accounts WHERE id = ?';
+        $query = 'SELECT id, name, photo_url, email_verified, kyced, kyc,
+			account_type
+            FROM accounts WHERE id = ?';
         $stmt = $this->db->prepare($query);
         $stmt->execute([$accountId]);
 
