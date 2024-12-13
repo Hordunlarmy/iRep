@@ -363,7 +363,7 @@ class AccountFactory
 
     public function fetchStatus($accountId)
     {
-        $query = 'SELECT id, email_verified, kyced, account_type
+        $query = 'SELECT id, email_verified, kyced, kyc, account_type
               FROM accounts WHERE id = ?';
         $stmt = $this->db->prepare($query);
         $stmt->execute([$accountId]);
@@ -383,6 +383,8 @@ class AccountFactory
         }
 
         $result['badge'] = $badge;
+        $result['id_uploaded'] = $result['kyc'] ? 1 : 0;
+        unset($result['kyc']);
 
         return $result;
     }
