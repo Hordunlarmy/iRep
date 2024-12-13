@@ -29,10 +29,15 @@ class PostResource extends JsonResource
             ->count() ?? 0;
 
         $badge = 0;
+
         if ($data->author_kyced) {
-            $badge = $data->author_account_type === '1'
-                ? 1
-                : ($data->author_account_type === '2' ? 2 : 0);
+            $accountType = (int)$data->author_account_type;
+
+            if ($accountType === 1) {
+                $badge = 1;
+            } elseif ($accountType === 2) {
+                $badge = 2;
+            }
         }
 
         $responseArray = [
@@ -43,7 +48,7 @@ class PostResource extends JsonResource
             'author' => $data->author,
             'author_badge' => $badge,
             'author_photo_url' => $data->author_photo,
-            'reported' => $data->reported,
+            'reported' => $data->reported ?? null,
             'status' => $postData->status ?? null,
             'created_at' => $data->created_at,
             'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
