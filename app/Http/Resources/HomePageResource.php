@@ -82,10 +82,9 @@ class HomePageResource extends JsonResource
             ->where('entity_id', $data->id)
             ->count() ?? 0;
 
-        $badge = 0;
+        $badge = null;
+        $accountType = (int) $data->author_account_type ?? null;
         if ($data->author_kyced) {
-            $accountType = (int)$data->author_account_type;
-
             if ($accountType === 1) {
                 $badge = 1;
             } elseif ($accountType === 2) {
@@ -101,7 +100,7 @@ class HomePageResource extends JsonResource
             'author' => $data->author,
             'author_id' => $data->author_id ?? null,
             'author_badge' => $badge,
-            'author_photo_url' => $data->author_photo_url,
+            'author_photo_url' => $data->author_photo_url ?? null,
             'reported' => $data->reported ?? null,
             'status' => $postData->status ?? null,
             'created_at' => $data->created_at,

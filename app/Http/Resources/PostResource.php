@@ -28,10 +28,8 @@ class PostResource extends JsonResource
             ->where('entity_id', $data->id)
             ->count() ?? 0;
 
-        $badge = 0;
-
         if ($data->author_kyced) {
-            $accountType = (int)$data->author_account_type;
+            $accountType = (int) $data->author_account_type;
 
             if ($accountType === 1) {
                 $badge = 1;
@@ -47,7 +45,7 @@ class PostResource extends JsonResource
             'post_type' => $data->post_type,
             'author' => $data->author,
             'author_badge' => $badge,
-            'author_photo_url' => $data->author_photo,
+            'author_photo_url' => $data->author_photo ?? null,
             'reported' => $data->reported ?? null,
             'status' => $postData->status ?? null,
             'created_at' => $data->created_at,

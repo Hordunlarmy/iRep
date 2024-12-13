@@ -131,6 +131,8 @@ Route::group([
 
         Route::get('/', [HomePageController::class, 'postsIndex'])->name('postsIndex');
         Route::post('/', [PostController::class, 'create'])->name('post.create');
+        Route::get('/petitions/{id}/signatures', [PostController::class, 'getSignees'])->name('getSignees');
+        Route::get('/eye-witness-reports/{id}/approvals', [PostController::class, 'getApprovals'])->name('getApprovals');
         Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
         Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
         Route::post('{id}/like', [PostController::class, 'like'])->name('post.like');
@@ -140,6 +142,7 @@ Route::group([
 
         Route::post('/{postId}/comment/{commentId?}', [CommentController::class, 'create'])->name('comment.create');
         Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
+        Route::delete('/{id}', [PostController::class, 'delete'])->name('post.delete');
     });
 
 });

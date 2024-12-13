@@ -77,6 +77,22 @@ class PostController extends Controller
         }
     }
 
+    public function delete($id)
+    {
+        try {
+            $post = $this->findEntity('post', $id);
+            if ($post->author_id !== Auth::id()) {
+                return response()->json(['error' => 'You are not authorized to delete this post'], 403);
+            }
+
+            $this->postFactory->deletePost($id);
+            return response()->json(['message' => 'success'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete post ' . $e->getMessage()], 500);
+        }
+    }
+
+
     public function signPetition($id, CommentRequest $request)
     {
         $entityData = $this->findEntity('post', $id);
@@ -143,6 +159,48 @@ class PostController extends Controller
         return $this->toggleAction('post', 'bookmarks', $id);
     }
 
+
+    public function getSignees($id, Request $request)
+    {
+        $page = $request->query('page', 1);
+        $pageSize = $request->query('pageSize', 10);
+
+        $result = $this->postFactory->getPetitionSignees($id, $page, $pageSize);
+
+        return response()->json($result);
+    }
+
+    public function getApprovals($id, Request $request)
+    {
+        $page = $request->query('page', 1);
+        $pageSize = $request->query('pageSize', 10);
+
+        $result = $this->postFactory->getEyewitnessReportApprovals($id, $page, $pageSize);
+
+        return response()->json($result);
+    }
+
+    public function report($id)
+    {
+        $entityData = $this->findEntity('post', $id);
+
+        if ($this->postFactory->hasUserReported($id, Auth::id())) {
+            return response()->json(['message' => 'You have already reported this post'], 400);
+        }
+
+        $this->postFactory->insertReport($id, Auth::id());
+
+        $notificationData = [
+            'entity_id' => $id,
+            'account_id' => $entityData->author_id,
+            'title' => 'New report on your post',
+            'body' => Auth::user()->name . ' reported your post',
+        ];
+
+        SendNotification::dispatch('post', $notificationData);
+
+        return response()->json(['message' => 'success']);
+    }
 
     public function share($id)
     {

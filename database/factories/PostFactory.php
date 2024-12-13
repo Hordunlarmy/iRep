@@ -52,7 +52,8 @@ class PostFactory extends CommentFactory
                 'context' => $fetchedPost->context,
                 'media' => $fetchedPost->media,
                 'post_type' => $fetchedPost->post_type,
-                'author_photo' => $fetchedPost->author_photo,
+                'author_photo_url' => $fetchedPost->author_photo,
+                'author_account_type' => $fetchedPost->author_account_type,
                 'author_kyced' => $fetchedPost->author_kyced,
                 'author' => $fetchedPost->author,
                 'author_id' => $fetchedPost->author_id,
@@ -366,6 +367,93 @@ class PostFactory extends CommentFactory
         }
 
         return $result['status'];
+    }
+
+    public function getPetitionSignees($postId, $page, $pageSize)
+    {
+        $offset = ($page - 1) * $pageSize;
+
+        $query = "
+		SELECT a.id, a.name, a.photo_url
+		FROM petition_signatures ps
+		JOIN accounts a ON ps.account_id = a.id
+		WHERE ps.post_id = ?
+		LIMIT ? OFFSET ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$postId, $pageSize, $offset]);
+        $data = $stmt->fetchAll(\PDO::FETCH_CLASS);
+
+        $countQuery = "
+		SELECT COUNT(*) as total
+		FROM petition_signatures ps
+		WHERE ps.post_id = ?";
+
+        $countStmt = $this->db->prepare($countQuery);
+        $countStmt->execute([$postId]);
+        $total = $countStmt->fetchColumn();
+
+        return [
+            'data' => $data,
+            'meta' => [
+                'total' => $total,
+                'current_page' => (int) $page,
+                'last_page' => (int) ceil($total / $pageSize),
+                'page_size' => (int) $pageSize,
+            ],
+        ];
+    }
+
+    public function getEyewitnessReportApprovals($postId, $page, $pageSize)
+    {
+        $offset = ($page - 1) * $pageSize;
+
+        $query = "
+		SELECT a.id, a.name, a.photo_url
+		FROM eye_witness_reports_approvals ewra
+		JOIN accounts a ON ewra.account_id = a.id
+		WHERE ewra.post_id = ?
+		LIMIT ? OFFSET ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$postId, $pageSize, $offset]);
+        $data = $stmt->fetchAll(\PDO::FETCH_CLASS);
+
+        $countQuery = "
+		SELECT COUNT(*) as total
+		FROM eye_witness_reports_approvals ewra
+		WHERE ewra.post_id = ?";
+
+        $countStmt = $this->db->prepare($countQuery);
+        $countStmt->execute([$postId]);
+        $total = $countStmt->fetchColumn();
+
+        return [
+            'data' => $data,
+            'meta' => [
+                'total' => $total,
+                'current_page' => (int) $page,
+                'last_page' => (int) ceil($total / $pageSize),
+                'page_size' => (int) $pageSize,
+            ],
+        ];
+    }
+
+    public function reportEntity($entityType, $entityId, $reporterId, $reason)
+    {
+        $query = "
+		INSERT INTO reports (entity_id, entity_type, reporter_id, reason)
+		VALUES (?, ?, ?, ?)";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$entityId, $entityType, $reporterId, $reason]);
+    }
+
+    public function deletePost($postId)
+    {
+        $query = "DELETE FROM posts WHERE id = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$postId]);
     }
 
 }
