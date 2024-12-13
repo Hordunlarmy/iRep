@@ -5,8 +5,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: irep
     ports:
-      - "8090:8080"
-      - "8091:8000"
+      - "8080:8080"
+      - "80:8000"
     volumes:
       - .:/workspace/irep
       - ./storage/logs:/workspace/irep/storage/logs
