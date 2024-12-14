@@ -57,7 +57,7 @@ class PostFactory extends CommentFactory
                 'author_kyced' => $fetchedPost->author_kyced,
                 'author' => $fetchedPost->author,
                 'author_id' => $fetchedPost->author_id,
-                'target_representative' => $postData['target_representative'] ?? null,
+                'target_representatives' => $postData['target_representatives'] ?? null,
                 'status' => $postData['status'] ?? null,
                 'reported' => $fetchedPost->reported ?? null,
                 'signatures' => $postData['signatures'] ?? null,
@@ -88,39 +88,54 @@ class PostFactory extends CommentFactory
     public function getPost($postId)
     {
         $query = "
-		SELECT
-		p.id,
-		p.title,
-		p.context,
-		p.media,
-		p.post_type,
-		a.name AS author,
-		a.photo_url AS author_photo,
-		a.kyced AS author_kyced,
-		a.account_type AS author_account_type,
-		a.id AS author_id,
-		r.reason AS reported,
-		p.status AS post_status,
-		p.created_at,
-		CASE
-		WHEN p.post_type = 'petition' THEN JSON_OBJECT(
-		'target_representative', rep.name,
-		'target_signatures', pe.target_signatures,
-		'signatures', pe.signatures,
-		'status', pe.status
-		)
-		WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
-		'approvals', ew.approvals,
-		'category', ew.category
-		)
-		END AS post_data
-		FROM posts p
-		LEFT JOIN petitions pe ON p.id = pe.post_id
-		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
-		LEFT JOIN accounts a ON p.creator_id = a.id
-		LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
-		LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
-		WHERE p.id = ?";
+        SELECT DISTINCT
+            p.id,
+            p.title,
+            p.context,
+            p.media,
+            p.post_type,
+            a.name AS author,
+            a.photo_url AS author_photo,
+            a.kyced AS author_kyced,
+            a.account_type AS author_account_type,
+            a.id AS author_id,
+            r.reason AS reported,
+            p.status AS post_status,
+            p.created_at,
+            CASE
+                WHEN p.post_type = 'petition' THEN JSON_OBJECT(
+                    'target_signatures', pe.target_signatures,
+                    'signatures', pe.signatures,
+                    'petition_status', pe.status,
+                    'target_representatives', IFNULL(
+                        JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'id', rep.id,
+                                'name', rep.name,
+                                'photo_url', rep.photo_url
+                            )
+                        ),
+                        JSON_ARRAY()
+                    )
+                )
+                WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
+                    'approvals', ew.approvals,
+                    'category', ew.category
+                )
+            END AS post_data
+        FROM posts p
+        LEFT JOIN petitions pe ON p.id = pe.post_id
+        LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
+        LEFT JOIN accounts a ON p.creator_id = a.id
+        LEFT JOIN petition_representatives pr ON pe.id = pr.petition_id
+        LEFT JOIN accounts rep ON pr.representative_id = rep.id
+        LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
+        WHERE p.id = ?
+        GROUP BY p.id, p.title, p.context, p.media, p.post_type,
+            p.status, p.created_at, a.name, a.photo_url, a.kyced,
+            a.id, a.account_type, pe.target_signatures, pe.signatures,
+			a.account_type, pe.id, ew.id, r.reason, pe.status, ew.approvals,
+			ew.category";
 
         $stmt = $this->db->prepare($query);
         $stmt->execute([$postId]);
@@ -141,39 +156,40 @@ class PostFactory extends CommentFactory
 			p.id,
 			p.title,
 			p.context,
-			p.media,
 			p.post_type,
+			p.media,
 			a.name AS author,
-			a.kyced AS author_kyced,
-			a.account_type AS author_account_type,
 			a.id AS author_id,
 			a.photo_url AS author_photo,
-			r.reason AS reported,
+			a.kyced AS author_kyced,
+			a.account_type AS author_account_type,
+			pe.status AS petition_status,
 			p.status AS post_status,
+			pe.signatures,
+			pe.target_signatures,
+			IFNULL((
+				SELECT JSON_ARRAYAGG(
+					JSON_OBJECT('id', rep.id, 'name', rep.name, 'photo_url', rep.photo_url)
+				)
+				FROM petition_representatives pr
+				LEFT JOIN accounts rep ON pr.representative_id = rep.id
+				WHERE pr.petition_id = pe.id
+			), JSON_ARRAY()) AS target_representatives,
+			ewr.category,
 			p.created_at,
-			CASE
-				WHEN p.post_type = 'petition' THEN JSON_OBJECT(
-					'target_representative', rep.name,
-					'signatures', pe.signatures,
-					'target_signatures', pe.target_signatures,
-					'status', pe.status
-				)
-				WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
-					'approvals', ew.approvals,
-					'category', ew.category
-				)
-			END AS post_data
+			r.reason AS reported
 		FROM posts p
 		LEFT JOIN petitions pe ON p.id = pe.post_id
-		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
+		LEFT JOIN eye_witness_reports ewr ON p.id = ewr.post_id
 		LEFT JOIN accounts a ON p.creator_id = a.id
-		LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
 		LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
-		WHERE 1=1";
+		WHERE 1=1
+		";
 
         list($query, $params) = $this->applyFilters($query, $params, $criteria);
         $query = $this->applySorting($query, $criteria);
 
+        // Pagination logic
         $query .= " LIMIT ? OFFSET ?";
         $params[] = $pageSize;
         $params[] = $offset;
@@ -182,10 +198,14 @@ class PostFactory extends CommentFactory
         $stmt->execute($params);
         $posts = $stmt->fetchAll(\PDO::FETCH_CLASS);
 
-        $countQuery = "SELECT COUNT(*) AS total FROM posts p
-                   LEFT JOIN petitions pe ON p.id = pe.post_id
-                   LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
-                   WHERE 1=1";
+        // Total count query (distinct count of posts)
+        $countQuery = "
+		SELECT COUNT(DISTINCT p.id) AS total
+		FROM posts p
+		LEFT JOIN petitions pe ON p.id = pe.post_id
+		LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
+		WHERE 1=1
+		";
 
         $countParams = [];
         list($countQuery, $countParams) = $this->applyFilters($countQuery, $countParams, $criteria);
@@ -250,37 +270,39 @@ class PostFactory extends CommentFactory
             p.id,
             p.title,
             p.context,
-            p.media,
             p.post_type,
+            p.media,
             a.name AS author,
+            a.id AS author_id,
+            a.photo_url AS author_photo_url,
             a.kyced AS author_kyced,
             a.account_type AS author_account_type,
-            a.id AS author_id,
-            a.photo_url AS author_photo,
-            r.reason AS reported,
-            p.status AS post_status,
+            pe.status,
+            pe.signatures,
+            pe.target_signatures,
+            IFNULL(
+                JSON_ARRAYAGG(
+                    JSON_OBJECT('id', rep.id, 'name', rep.name, 'photo_url', rep.photo_url)
+                ),
+                JSON_ARRAY()
+            ) AS target_representatives,
+            ew.category,
             p.created_at,
-            CASE
-                WHEN p.post_type = 'petition' THEN JSON_OBJECT(
-                    'target_representative', rep.name,
-                    'signatures', pe.signatures,
-                    'target_signatures', pe.target_signatures,
-                    'status', pe.status
-                )
-                WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
-                    'approvals', ew.approvals,
-                    'category', ew.category
-                )
-            END AS post_data
+            r.reason AS reported
         FROM bookmarks
         JOIN posts p ON bookmarks.entity_id = p.id AND bookmarks.entity_type = 'post'
         LEFT JOIN petitions pe ON p.id = pe.post_id
         LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
         LEFT JOIN accounts a ON p.creator_id = a.id
-        LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
+        LEFT JOIN petition_representatives pr ON pe.id = pr.petition_id
+        LEFT JOIN accounts rep ON pr.representative_id = rep.id
         LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
         WHERE bookmarks.account_id = ?
-    ";
+        GROUP BY p.id, p.title, p.context, p.post_type, p.media,
+            a.name, a.id, a.photo_url, a.kyced,
+            a.account_type, pe.status, pe.signatures,
+            pe.target_signatures, ew.category,
+            p.created_at, r.reason";
 
         $stmt = $this->db->prepare($query);
         $stmt->execute([$accountId]);

@@ -30,12 +30,20 @@ return new class () extends Migration {
 			post_id INT NOT NULL,
 			signatures INT DEFAULT 0,
 			target_signatures INT DEFAULT 100,
-			target_representative_id INT,
 			status ENUM('open', 'submitted', 'approved') DEFAULT 'open',
-			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-			FOREIGN KEY (target_representative_id) REFERENCES accounts(id) ON DELETE CASCADE
+			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 			)
 			");
+
+        DB::statement("
+			CREATE TABLE petition_representatives (
+				petition_id INT NOT NULL,
+				representative_id INT NOT NULL,
+				PRIMARY KEY (petition_id, representative_id),
+				FOREIGN KEY (petition_id) REFERENCES petitions(id) ON DELETE CASCADE,
+				FOREIGN KEY (representative_id) REFERENCES accounts(id) ON DELETE CASCADE
+			)
+		");
 
         DB::statement("
 			CREATE TABLE eye_witness_reports (

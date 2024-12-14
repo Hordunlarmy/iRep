@@ -18,155 +18,236 @@ class RepresentativeSeeder extends Seeder
         // Load data from the spreadsheet
         $data = Excel::toCollection(null, $filePath)->first();
 
+        // Process spreadsheet data
         foreach ($data as $index => $row) {
             if ($index === 0) {
                 continue;
             }
 
-            $name = trim($row[0]);
-            $state = trim($row[1]);
-            $district = trim($row[2]);
-            $party = trim($row[3]);
-            $email = trim($row[4]);
-            $phone_number = trim($row[5]);
-            $position = trim($row[6]);
-
-            $phone_number = ($phone_number === 'N/A' || empty($phone_number)) ? null : $phone_number;
-
-            if (empty($name)) {
-                continue;
-            }
-
-            if (empty($email)) {
-                $email = Str::random(10) . '@example.com';
-            } elseif (DB::table('accounts')->where('email', $email)->exists()) {
-                continue;
-            }
-
-            try {
-                $position_id = DB::table('positions')->where('title', $position)->value('id');
-                $party_id = DB::table('parties')->where('code', $party)->value('id');
-                $state_id = DB::table('states')->where('name', $state)->value('id');
-                $district_id = DB::table('districts')->where('name', $district)->value('id');
-
-                // Insert account data
-                $account_id = DB::table('accounts')->insertGetId([
-                    'photo_url' => "https://i.imgur.com/0GY9tnz.jpeg",
-                    'name' => $name,
-                    'email' => $email,
-                    'phone_number' => $phone_number,
-                    'dob' => null,
-                    'state_id' => $state_id ?? null,
-                    'local_government_id' => null,
-                    'polling_unit' => null,
-                    'password' => Hash::make('password456'),
-                    'email_verified' => true,
-                    'account_type' => 2,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-
-                // Insert representative data
-                DB::table('representatives')->insert([
-                    'position_id' => $position_id ?? null,
-                    'constituency_id' => $constituency_id ?? null,
-                    'district_id' => $district_id ?? null,
-                    'party_id' => $party_id ?? null,
-                    'bio' => $name . ' is a representative from ' . $district,
-                    'account_id' => $account_id,
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to insert representative: ' . $e->getMessage(), ['row' => $row]);
-            }
+            $this->insertRepresentativeData($row);
         }
 
-        // Additional hardcoded seed data for specified positions
-        $positions = [
-            'President' => [
-                ['name' => 'Chris Adams',
-                'state' => 'Lagos', 'district' => 'Ikeja', 'party' => 'PDP', 'email' => 'chris.adams@example.com', 'phone_number' => '08012345678'],
-                ['name' => 'Patricia Olamide', 'state' => 'Ogun', 'district' => 'Abeokuta', 'party' => 'APC', 'email' => 'patricia.olamide@example.com', 'phone_number' => '08123456789'],
+        // Additional hardcoded seed data
+        $hardcodedRepresentatives = [
+            // President
+            [
+                'Muhammadu Buhari', 'Katsina', 'Katsina', 'APC',
+                'muhammadu.buhari@example.com', '08012345678', 'President',
             ],
-            'Vice President' => [
-                ['name' => 'Michael Abiola', 'state' => 'Abuja', 'district' => 'Central', 'party' => 'APC', 'email' => 'michael.abiola@example.com', 'phone_number' => '08098765432'],
-                ['name' => 'Sarah Oni', 'state' => 'Rivers', 'district' => 'Port Harcourt', 'party' => 'PDP', 'email' => 'sarah.oni@example.com', 'phone_number' => '09012345678'],
+
+            // Vice President
+            [
+                'Kashim Shettima', 'Borno', 'Maiduguri', 'APC',
+                'kashim.shettima@example.com', '08023456789', 'Vice President',
             ],
-            'Minister' => [
-                ['name' => 'Kehinde Adebayo', 'state' => 'Ekiti', 'district' => 'Ado Ekiti', 'party' => 'APC', 'email' => 'kehinde.adebayo@example.com', 'phone_number' => '08123456789'],
-                ['name' => 'Titi Johnson', 'state' => 'Delta', 'district' => 'Asaba', 'party' => 'PDP', 'email' => 'titi.johnson@example.com', 'phone_number' => '08012345678'],
+            [
+                'Atiku Abubakar', 'Adamawa', 'Yola', 'PDP',
+                'atiku.abubakar@example.com', '08034567890', 'Vice President',
             ],
-            'Senator' => [
-                ['name' => 'Jibola Adebayo', 'state' => 'Osun', 'district' => 'Osogbo', 'party' => 'PDP', 'email' => 'jibola.adebayo@example.com', 'phone_number' => '09011223344'],
-                ['name' => 'Grace Afolabi', 'state' => 'Ogun', 'district' => 'Abeokuta', 'party' => 'APC', 'email' => 'grace.afolabi@example.com', 'phone_number' => '08098765432'],
+
+            // Minister
+            [
+                'Rotimi Amaechi', 'Rivers', 'Port Harcourt', 'APC',
+                'rotimi.amaechi@example.com', '08045678901', 'Minister',
             ],
-            'House of Representatives Member' => [
-                ['name' => 'Solomon Okoro', 'state' => 'Lagos', 'district' => 'Oshodi-Isolo', 'party' => 'APC', 'email' => 'solomon.okoro@example.com', 'phone_number' => '09023456789'],
-                ['name' => 'Bukola Adewumi', 'state' => 'Oyo', 'district' => 'Ibadan North', 'party' => 'PDP', 'email' => 'bukola.adewumi@example.com', 'phone_number' => '08012345678'],
+            [
+                'Ngozi Okonjo-Iweala', 'Delta', 'Warri', 'PDP',
+                'ngozi.okonjo-iweala@example.com', '08056789012', 'Minister',
             ],
-            'Governor' => [
-                ['name' => 'Tunde Babajide', 'state' => 'Ekiti', 'district' => 'Ado Ekiti', 'party' => 'APC', 'email' => 'tunde.babajide@example.com', 'phone_number' => '08012345678'],
-                ['name' => 'Ruth Afolabi', 'state' => 'Lagos', 'district' => 'Ikeja', 'party' => 'PDP', 'email' => 'ruth.afolabi@example.com', 'phone_number' => '09087654321'],
+
+            // Senator
+            [
+                'Bukola Saraki', 'Kwara', 'Ilorin', 'PDP',
+                'bukola.saraki@example.com', '08067890123', 'Senator',
             ],
-            'Deputy Governor' => [
-                ['name' => 'Ibrahim Olumide', 'state' => 'Kwara', 'district' => 'Ilorin', 'party' => 'APC', 'email' => 'ibrahim.olumide@example.com', 'phone_number' => '09012345678'],
-                ['name' => 'Ngozi Osuji', 'state' => 'Anambra', 'district' => 'Awka', 'party' => 'PDP', 'email' => 'ngozi.osuji@example.com', 'phone_number' => '08023456789'],
+            [
+                'Ahmed Lawan', 'Yobe', 'Damaturu', 'APC',
+                'ahmed.lawan@example.com', '08078901234', 'Senator',
             ],
-            'State House of Assembly Member' => [
-                ['name' => 'Oluwaseun Akinwunmi', 'state' => 'Lagos', 'district' => 'Oshodi-Isolo', 'party' => 'APC', 'email' => 'oluwaseun.akinwunmi@example.com', 'phone_number' => '08012345678'],
-                ['name' => 'Chidimma Uche', 'state' => 'Enugu', 'district' => 'Enugu North', 'party' => 'PDP', 'email' => 'chidimma.uche@example.com', 'phone_number' => '09098765432'],
+
+            // House of Representatives Member
+            [
+                'Femi Gbajabiamila', 'Lagos', 'Surulere', 'APC',
+                'femi.gbajabiamila@example.com', '08089012345', 'House of Representatives Member',
             ],
-            'Chairman (LGA)' => [
-                ['name' => 'Jide Babajide', 'state' => 'Ogun', 'district' => 'Abeokuta', 'party' => 'PDP', 'email' => 'jide.babajide@example.com', 'phone_number' => '08123456789'],
-                ['name' => 'Ebere Nwachukwu', 'state' => 'Abuja', 'district' => 'Bwari', 'party' => 'APC', 'email' => 'ebere.nwachukwu@example.com', 'phone_number' => '09087654321'],
+            [
+                'Rita Orji', 'Abia', 'Aba', 'PDP',
+                'rita.orji@example.com', '08090123456', 'House of Representatives Member',
             ],
-            'Vice Chairman (LGA)' => [
-                ['name' => 'Emeka Okafor', 'state' => 'Abuja', 'district' => 'Abuja Municipal', 'party' => 'APC', 'email' => 'emeka.okafor@example.com', 'phone_number' => '08023456789'],
-                ['name' => 'Oluwatoyin Akinwunmi', 'state' => 'Lagos', 'district' => 'Surulere', 'party' => 'PDP', 'email' => 'oluwatoyin.akinwunmi@example.com', 'phone_number' => '09012345678'],
+
+            // Governor
+            [
+                'Babajide Sanwo-Olu', 'Lagos', 'Lagos Island', 'APC',
+                'babajide.sanwo-olu@example.com', '08001234567', 'Governor',
             ],
-            'Councillor' => [
-                ['name' => 'Tunde Adeola', 'state' => 'Ogun', 'district' => 'Ifo', 'party' => 'APC', 'email' => 'tunde.adeola@example.com', 'phone_number' => '08012345678'],
-                ['name' => 'Micheal Afolabi', 'state' => 'Oyo', 'district' => 'Ibadan', 'party' => 'PDP', 'email' => 'micheal.afolabi@example.com', 'phone_number' => '09098765432'],
+            [
+                'Udom Emmanuel', 'Akwa Ibom', 'Uyo', 'PDP',
+                'udom.emmanuel@example.com', '08012345678', 'Governor',
             ],
-            'Special Adviser' => [
-                ['name' => 'Rita Okoro', 'state' => 'Lagos', 'district' => 'Surulere', 'party' => 'APC', 'email' => 'rita.okoro@example.com', 'phone_number' => '09012345678'],
-                ['name' => 'Chigozie Okwara', 'state' => 'Abia', 'district' => 'Umuahia', 'party' => 'PDP', 'email' => 'chigozie.okwara@example.com', 'phone_number' => '08023456789'],
+
+            // Deputy Governor
+            [
+                'Obafemi Hamzat', 'Lagos', 'Ikeja', 'APC',
+                'obafemi.hamzat@example.com', '08023456789', 'Deputy Governor',
+            ],
+            [
+                'Moses Ekpo', 'Akwa Ibom', 'Uyo', 'PDP',
+                'moses.ekpo@example.com', '08034567890', 'Deputy Governor',
+            ],
+
+            // State House of Assembly Member
+            [
+                'Mudashiru Obasa', 'Lagos', 'Agege', 'APC',
+                'mudashiru.obasa@example.com', '08045678901', 'State House of Assembly Member',
+            ],
+            [
+                'Kingsley Esiso', 'Delta', 'Asaba', 'PDP',
+                'kingsley.esiso@example.com', '08056789012', 'State House of Assembly Member',
+            ],
+
+            // Chairman (LGA)
+            [
+                'Olufunso Adeyemi', 'Ogun', 'Abeokuta', 'APC',
+                'olufunso.adeyemi@example.com', '08067890123', 'Chairman (LGA)',
+            ],
+            [
+                'Iretiola Akinwunmi', 'Ekiti', 'Ado Ekiti', 'PDP',
+                'iretiola.akinwunmi@example.com', '08078901234', 'Chairman (LGA)',
+            ],
+
+            // Vice Chairman (LGA)
+            [
+                'Bola Abisoye', 'Ogun', 'Ota', 'APC',
+                'bola.abisoye@example.com', '08089012345', 'Vice Chairman (LGA)',
+            ],
+            [
+                'Chika Nwankwo', 'Enugu', 'Enugu North', 'PDP',
+                'chika.nwankwo@example.com', '08090123456', 'Vice Chairman (LGA)',
+            ],
+
+            // Councillor
+            [
+                'Taiwo Akinola', 'Ogun', 'Ifo', 'APC',
+                'taiwo.akinola@example.com', '08001234567', 'Councillor',
+            ],
+            [
+                'Cynthia Ogbulafor', 'Abia', 'Aba South', 'PDP',
+                'cynthia.ogbulafor@example.com', '08012345678', 'Councillor',
+            ],
+
+            // Special Adviser
+            [
+                'Dapo Olanipekun', 'Ogun', 'Abeokuta North', 'APC',
+                'dapo.olanipekun@example.com', '08023456789', 'Special Adviser',
+            ],
+            [
+                'Patricia Oboh', 'Edo', 'Benin City', 'PDP',
+                'patricia.oboh@example.com', '08034567890', 'Special Adviser',
+            ],
+
+            // Local Government Secretary
+            [
+                'Samson Akintoye', 'Ogun', 'Abeokuta South', 'APC',
+                'samson.akintoye@example.com', '08045678901', 'Local Government Secretary',
+            ],
+            [
+                'Victoria Okeke', 'Anambra', 'Awka', 'PDP',
+                'victoria.okeke@example.com', '08056789012', 'Local Government Secretary',
+            ],
+
+            // Political Party Chairman
+            [
+                'Adams Oshiomhole', 'Edo', 'Benin City', 'APC',
+                'adams.oshiomhole@example.com', '08067890123', 'Political Party Chairman',
+            ],
+            [
+                'Uche Secondus', 'Rivers', 'Port Harcourt', 'PDP',
+                'uche.secondus@example.com', '08078901234', 'Political Party Chairman',
+            ],
+
+            // National Chairman (Party)
+            [
+                'Okechukwu Madu', 'Abia', 'Aba North', 'APC',
+                'okechukwu.madu@example.com', '08089012345', 'National Chairman (Party)',
+            ],
+            [
+                'Ifeanyi Uba', 'Anambra', 'Nnewi', 'PDP',
+                'ifeanyi.uba@example.com', '08090123456', 'National Chairman (Party)',
+            ],
+
+            // Secretary to the Government
+            [
+                'Boss Mustapha', 'Adamawa', 'Yola', 'APC',
+                'boss.mustapha@example.com', '08001234567', 'Secretary to the Government',
+            ],
+            [
+                'Oladapo Afolabi', 'Ogun', 'Abeokuta', 'PDP',
+                'oladapo.afolabi@example.com', '08012345678', 'Secretary to the Government',
             ],
         ];
 
-        foreach ($positions as $positionTitle => $representatives) {
-            foreach ($representatives as $representative) {
-                try {
-                    $position_id = DB::table('positions')->where('title', $positionTitle)->value('id');
-                    $party_id = DB::table('parties')->where('code', $representative['party'])->value('id');
-                    $state_id = DB::table('states')->where('name', $representative['state'])->value('id');
-                    $district_id = DB::table('districts')->where('name', $representative['district'])->value('id');
+        foreach ($hardcodedRepresentatives as $representative) {
+            $this->insertRepresentativeData($representative);
+        }
+    }
 
-                    $account_id = DB::table('accounts')->insertGetId([
-                        'photo_url' => "https://i.imgur.com/0GY9tnz.jpeg",
-                        'name' => $representative['name'],
-                        'email' => $representative['email'],
-                        'phone_number' => $representative['phone_number'],
-                        'dob' => null,
-                        'state_id' => $state_id ?? null,
-                        'local_government_id' => null,
-                        'polling_unit' => null,
-                        'password' => Hash::make('password456'),
-                        'email_verified' => true,
-                        'account_type' => 2,
-                    ]);
+    // Method to insert representative data
+    private function insertRepresentativeData($data)
+    {
+        $name = trim($data[0] ?? '');
+        $state = trim($data[1] ?? '');
+        $district = trim($data[2] ?? '');
+        $party = trim($data[3] ?? '');
+        $email = trim($data[4] ?? '');
+        $phone_number = trim($data[5] ?? '');
+        $position = trim($data[6] ?? '');
 
-                    DB::table('representatives')->insert([
-                        'position_id' => $position_id ?? null,
-                        'constituency_id' => $constituency_id ?? null,
-                        'district_id' => $district_id ?? null,
-                        'party_id' => $party_id ?? null,
-                        'bio' => $representative['name'] . ' is a representative from ' . $representative['district'],
-                        'account_id' => $account_id,
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to insert representative: ' . $e->getMessage(), ['representative' => $representative]);
-                }
-            }
+        $phone_number = ($phone_number === 'N/A' || empty($phone_number)) ? null : $phone_number;
+
+        if (empty($name)) {
+            return;
+        }
+
+        if (empty($email)) {
+            $email = Str::random(10) . '@example.com';
+        } elseif (DB::table('accounts')->where('email', $email)->exists()) {
+            return;
+        }
+
+        try {
+            $position_id = DB::table('positions')->where('title', $position)->value('id');
+            $party_id = DB::table('parties')->where('code', $party)->value('id');
+            $state_id = DB::table('states')->where('name', $state)->value('id');
+            $district_id = DB::table('districts')->where('name', $district)->value('id');
+
+            // Insert account data
+            $account_id = DB::table('accounts')->insertGetId([
+                'photo_url' => "https://i.imgur.com/0GY9tnz.jpeg",
+                'name' => $name,
+                'email' => $email,
+                'phone_number' => $phone_number,
+                'dob' => null,
+                'state_id' => $state_id ?? null,
+                'local_government_id' => null,
+                'polling_unit' => null,
+                'password' => Hash::make('password456'),
+                'email_verified' => true,
+                'account_type' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Insert representative data
+            DB::table('representatives')->insert([
+                'position_id' => $position_id ?? null,
+                'constituency_id' => $constituency_id ?? null,
+                'district_id' => $district_id ?? null,
+                'party_id' => $party_id ?? null,
+                'bio' => $name . ' is a representative from ' . $district,
+                'account_id' => $account_id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to insert representative: ' . $e->getMessage(), ['row' => $data]);
         }
     }
 }

@@ -16,24 +16,24 @@ class PostSeeder extends Seeder
                 'title' => 'Petition for Better Road Infrastructure',
                 'context' => 'We need better roads in our community to ensure safety and accessibility.',
                 'media' => json_encode(['https://i.imgur.com/6OiQwEJ.jpeg', 'https://i.imgur.com/cl7CDK6.jpeg']),
-                'creator_id' => 1,
-                'target_representative_id' => 10,
+                'creator_id' => 2,
+                'target_representatives' => [10, 12],
             ],
             [
                 'post_type' => 'petition',
                 'title' => 'Petition for Improved Healthcare Services',
                 'context' => 'Our healthcare system needs urgent reforms to better serve the community.',
                 'media' => json_encode(['https://i.imgur.com/DI5HhNd.jpeg', 'https://i.imgur.com/SMBmLqX.jpeg']),
-                'creator_id' => 2,
-                'target_representative_id' => 11,
+                'creator_id' => 3,
+                'target_representatives' => [11, 13],
             ],
             [
                 'post_type' => 'petition',
                 'title' => 'Petition for Environmental Protection',
                 'context' => 'We urge the government to take action against pollution in our area.',
                 'media' => json_encode(['https://i.imgur.com/vSltOz5.jpeg', 'https://i.imgur.com/fu2EWSt.png']),
-                'creator_id' => 3,
-                'target_representative_id' => 12,
+                'creator_id' => 4,
+                'target_representatives' => [12, 14],
             ],
         ];
 
@@ -43,7 +43,7 @@ class PostSeeder extends Seeder
                 'title' => 'Eyewitness Report: Accident on Main Street',
                 'context' => 'I witnessed a serious accident involving two cars at the intersection.',
                 'media' => json_encode(['https://i.imgur.com/bNSRtUa.jpeg', 'https://i.imgur.com/ZGBLL5r.jpeg']),
-                'creator_id' => 4,
+                'creator_id' => 5,
                 'category' => 'accident',
             ],
             [
@@ -51,7 +51,7 @@ class PostSeeder extends Seeder
                 'title' => 'Eyewitness Report: Theft at Local Market',
                 'context' => 'I saw a theft incident at the local market yesterday afternoon.',
                 'media' => json_encode(['https://i.imgur.com/cbxyz99.jpeg', 'https://i.imgur.com/U43c4kd.jpeg']),
-                'creator_id' => 5,
+                'creator_id' => 6,
                 'category' => 'crime',
             ],
             [
@@ -59,7 +59,7 @@ class PostSeeder extends Seeder
                 'title' => 'Eyewitness Report: Fire Incident at Warehouse',
                 'context' => 'A fire broke out at the warehouse causing significant damage.',
                 'media' => json_encode(['https://i.imgur.com/68BVZ0K.jpeg', 'https://i.imgur.com/8OFejgA.jpeg']),
-                'creator_id' => 6,
+                'creator_id' => 7,
                 'category' => 'other',
             ],
         ];
@@ -74,10 +74,16 @@ class PostSeeder extends Seeder
                     'creator_id' => $petition['creator_id'],
                 ]);
 
-                DB::table('petitions')->insert([
+                $petitionId = DB::table('petitions')->insertGetId([
                     'post_id' => $postId,
-                    'target_representative_id' => $petition['target_representative_id'],
                 ]);
+
+                foreach ($petition['target_representatives'] as $repId) {
+                    DB::table('petition_representatives')->insert([
+                        'petition_id' => $petitionId,
+                        'representative_id' => $repId,
+                    ]);
+                }
             } catch (\Exception $e) {
                 Log::error('Failed to insert petition: ' . $e->getMessage(), $petition);
             }

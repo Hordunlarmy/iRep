@@ -17,7 +17,6 @@ class PostController extends Controller
         try {
             $validatedData = $request->validated();
             $validatedData['creatorId'] = Auth::id();
-            $validatedData['targetRepresentativeId'] = $validatedData['target_representative_id'] ?? null;
 
             if ($request->hasFile('media')) {
                 $mediaFiles = $request->file('media');

@@ -94,7 +94,7 @@ return new class () extends Migration {
                 name VARCHAR(255),
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password VARCHAR(255),
-                phone_number VARCHAR(20) UNIQUE,
+                phone_number VARCHAR(20),
                 gender ENUM('male', 'female', 'other'),
 				dob DATE,
 				location VARCHAR(255),
