@@ -131,15 +131,19 @@ Route::group([
 
         Route::get('/', [HomePageController::class, 'postsIndex'])->name('postsIndex');
         Route::post('/', [PostController::class, 'create'])->name('post.create');
+        Route::get('/petitions/{id}/signatures', [PostController::class, 'getSignees'])->name('getSignees');
+        Route::get('/eye-witness-reports/{id}/approvals', [PostController::class, 'getApprovals'])->name('getApprovals');
         Route::post('/petitions/{id}/sign', [PostController::class, 'signPetition'])->name('signPetition');
         Route::post('/eye-witness-reports/{id}/approve', [PostController::class, 'approveReport'])->name('approveReport');
         Route::post('{id}/like', [PostController::class, 'like'])->name('post.like');
         Route::post('{id}/repost', [PostController::class, 'repost'])->name('post.repost');
         Route::post('{id}/bookmark', [PostController::class, 'bookmark'])->name('post.bookmark');
+        Route::post('/{id}/report', [PostController::class, 'report'])->name('post.report');
         Route::get('/{id}/share', [PostController::class, 'share'])->name('post.share');
 
         Route::post('/{postId}/comment/{commentId?}', [CommentController::class, 'create'])->name('comment.create');
         Route::get('/{id}/comments', [CommentController::class, 'comments'])->name('comments');
+        Route::delete('/{id}', [PostController::class, 'delete'])->name('post.delete');
     });
 
 });
@@ -151,6 +155,8 @@ Route::group([
     Route::get('/', [CommentController::class, 'index'])->name('comment.index');
     Route::post('/', [CommentController::class, 'create'])->name('parentComment.create');
     Route::get('/{id}', [CommentController::class, 'show'])->name('comment.show');
+    Route::post('/{id}/report', [CommentController::class, 'report'])->name('post.report');
+    Route::delete('/{id}', [CommentController::class, 'delete'])->name('comment.delete');
     Route::post('/{id}/like', [CommentController::class, 'like'])->name('comment.like');
 });
 

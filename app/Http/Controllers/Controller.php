@@ -143,4 +143,15 @@ abstract class Controller extends BaseController
 
         return $data;
     }
+
+    public function reportEntity($entityType, $entityId, $reporterId, $reason)
+    {
+        $query = "
+		INSERT INTO reports (entity_id, entity_type, reporter_id, reason)
+		VALUES (?, ?, ?, ?)";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$entityId, $entityType, $reporterId, $reason]);
+    }
+
 }

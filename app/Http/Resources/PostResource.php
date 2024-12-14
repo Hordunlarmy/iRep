@@ -30,9 +30,13 @@ class PostResource extends JsonResource
 
         $badge = 0;
         if ($data->author_kyced) {
-            $badge = $data->author_account_type === '1'
-                ? 1
-                : ($data->author_account_type === '2' ? 2 : 0);
+            $accountType = (int) $data->author_account_type;
+
+            if ($accountType === 1) {
+                $badge = 1;
+            } elseif ($accountType === 2) {
+                $badge = 2;
+            }
         }
 
         $responseArray = [
@@ -42,8 +46,10 @@ class PostResource extends JsonResource
             'post_type' => $data->post_type,
             'author' => $data->author,
             'author_badge' => $badge,
-            'reported' => $data->reported,
-            'status' => $postData->status ?? null,
+            'author_photo_url' => $data->author_photo ?? null,
+            'reported' => $data->reported ?? null,
+            'petition_status' => $data->petition_status ?? null,
+            'post_status' => $data->post_status ?? null,
             'created_at' => $data->created_at,
             'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
             'comments' => $commentCount,
@@ -83,8 +89,8 @@ class PostResource extends JsonResource
             $responseArray['category'] = $postData['category'];
         }
 
-        if (isset($postData['target_representative'])) {
-            $responseArray['target_representative'] = $postData['target_representative'];
+        if (isset($postData['target_representatives'])) {
+            $responseArray['target_representatives'] = $postData['target_representatives'];
         }
 
         if (isset($postData['signatures'])) {
@@ -95,8 +101,8 @@ class PostResource extends JsonResource
             $responseArray['target_signatures'] = $postData['target_signatures'];
         }
 
-        if (isset($postData['status'])) {
-            $responseArray['status'] = $postData['status'];
+        if (isset($postData['petition_status'])) {
+            $responseArray['petition_status'] = $postData['petition_status'];
         }
 
         if ($comments->isNotEmpty()) {

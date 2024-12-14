@@ -8,6 +8,7 @@ use App\Http\Requests\CommentRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PostResource;
 use App\Jobs\SendNotification;
+use App\Http\Resources\HomePageResource;
 
 class PostController extends Controller
 {
@@ -16,7 +17,6 @@ class PostController extends Controller
         try {
             $validatedData = $request->validated();
             $validatedData['creatorId'] = Auth::id();
-            $validatedData['targetRepresentativeId'] = $validatedData['target_representative_id'] ?? null;
 
             if ($request->hasFile('media')) {
                 $mediaFiles = $request->file('media');
@@ -66,6 +66,25 @@ class PostController extends Controller
         }
     }
 
+    public function getUserBookmarks()
+    {
+        try {
+            $result = $this->postFactory->getBookmarkedPosts(Auth::id());
+
+            return response()->json(
+                HomePageResource::collection($result)
+                    ->map(fn ($item) => $item->toPostArray())
+                    ->flatten(1),
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json(
+                ['error' => 'Failed to fetch bookmarks: ' . $e->getMessage()],
+                500
+            );
+        }
+    }
+
 
     public function show($id, Request $request)
     {
@@ -76,6 +95,22 @@ class PostController extends Controller
             return response()->json(['error' => 'Failed to fetch post ' . $e->getMessage()], 500);
         }
     }
+
+    public function delete($id)
+    {
+        try {
+            $post = $this->findEntity('post', $id);
+            if ($post->author_id !== Auth::id()) {
+                return response()->json(['error' => 'You are not authorized to delete this post'], 403);
+            }
+
+            $this->postFactory->deletePost($id);
+            return response()->json(['message' => 'success'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete post ' . $e->getMessage()], 500);
+        }
+    }
+
 
     public function signPetition($id, CommentRequest $request)
     {
@@ -143,6 +178,46 @@ class PostController extends Controller
         return $this->toggleAction('post', 'bookmarks', $id);
     }
 
+
+    public function getSignees($id, Request $request)
+    {
+        $page = $request->query('page', 1);
+        $pageSize = $request->query('pageSize', 10);
+
+        $result = $this->postFactory->getPetitionSignees($id, $page, $pageSize);
+
+        return response()->json($result);
+    }
+
+    public function getApprovals($id, Request $request)
+    {
+        $page = $request->query('page', 1);
+        $pageSize = $request->query('pageSize', 10);
+
+        $result = $this->postFactory->getEyewitnessReportApprovals($id, $page, $pageSize);
+
+        return response()->json($result);
+    }
+
+    public function report($id, Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'reason' => 'required|string|exists:reports,reason',
+            ]);
+
+            $this->findEntity('post', $id);
+            $this->reportEntity('post', $id, Auth::id(), $validated['reason']);
+            $this->postFactory->indexPost($id);
+
+
+            return response()->json(['message' => 'success']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to report post ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function share($id)
     {

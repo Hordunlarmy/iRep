@@ -363,10 +363,30 @@ class AccountFactory
 
     public function fetchStatus($accountId)
     {
-        $query = 'SELECT id, email_verified, kyced FROM accounts WHERE id = ?';
+        $query = 'SELECT id, name, photo_url, email_verified, kyced, kyc,
+			account_type
+            FROM accounts WHERE id = ?';
         $stmt = $this->db->prepare($query);
         $stmt->execute([$accountId]);
 
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        $badge = 0;
+
+        if ($result['kyced']) {
+            $accountType = (int)$result['account_type'];
+
+            if ($accountType === 1) {
+                $badge = 1;
+            } elseif ($accountType === 2) {
+                $badge = 2;
+            }
+        }
+
+        $result['badge'] = $badge;
+        $result['id_uploaded'] = $result['kyc'] ? 1 : 0;
+        unset($result['kyc']);
+
+        return $result;
     }
 }

@@ -82,6 +82,16 @@ class HomePageResource extends JsonResource
             ->where('entity_id', $data->id)
             ->count() ?? 0;
 
+        $badge = null;
+        $accountType = (int) $data->author_account_type ?? null;
+        if ($data->author_kyced) {
+            if ($accountType === 1) {
+                $badge = 1;
+            } elseif ($accountType === 2) {
+                $badge = 2;
+            }
+        }
+
         $responseArray = [
             'id' => $data->id,
             'title' => $data->title,
@@ -89,6 +99,10 @@ class HomePageResource extends JsonResource
             'post_type' => $data->post_type,
             'author' => $data->author,
             'author_id' => $data->author_id ?? null,
+            'author_badge' => $badge,
+            'author_photo_url' => $data->author_photo_url ?? null,
+            'reported' => $data->reported ?? null,
+            'status' => $postData->status ?? null,
             'created_at' => $data->created_at,
             'media' => property_exists($data, 'media') ? json_decode($data->media, true) : null,
             'comments' => $commentCount,

@@ -50,7 +50,8 @@ class Post
                 $this->creatorId
             ]);
 
-            return $this->db->lastInsertId();
+            $id = $this->db->lastInsertId();
+            return $id;
 
         } catch (\PDOException $e) {
             if (str_contains($e->getMessage(), 'Duplicate entry')) {

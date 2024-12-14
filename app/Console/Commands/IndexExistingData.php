@@ -77,33 +77,56 @@ class IndexExistingData extends Command
      */
     private function indexPosts(): void
     {
-        // Fetch posts data from the database
         try {
+            // Fetch posts data from the database
             $postsData = DB::select("
-				SELECT p.id, p.title, p.context, p.post_type, p.media,
-				a.name AS author,
-				a.id AS author_id,
-				a.photo_url AS author_photo,
-				a.kyced AS author_kyced,
-				a.account_type AS author_account_type,
-				rep.name AS target_representative,
-				pe.status,
-				pe.signatures,
-				pe.target_signatures,
-				ewr.category,
-				p.created_at,
-				r.reason AS reported
+				SELECT
+					p.id,
+					p.title,
+					p.context,
+					p.post_type,
+					p.media,
+					a.name AS author,
+					a.id AS author_id,
+					a.photo_url AS author_photo_url,
+					a.kyced AS author_kyced,
+					a.account_type AS author_account_type,
+					pe.status AS petition_status,
+					p.status AS post_status,
+					pe.signatures,
+					pe.target_signatures,
+					IFNULL(
+						JSON_ARRAYAGG(
+							JSON_OBJECT('id', rep.id, 'name', rep.name, 'photo_url', rep.photo_url)
+						),
+						JSON_ARRAY()
+					) AS target_representatives,
+					ewr.category,
+					p.created_at,
+					r.reason AS reported
 				FROM posts p
 				LEFT JOIN petitions pe ON p.id = pe.post_id
+				LEFT JOIN petition_representatives pr ON pe.id = pr.petition_id
+				LEFT JOIN accounts rep ON pr.representative_id = rep.id
 				LEFT JOIN eye_witness_reports ewr ON p.id = ewr.post_id
 				LEFT JOIN accounts a ON p.creator_id = a.id
-				LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
 				LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
+				GROUP BY p.id, p.title, p.context, p.post_type, p.status, p.media,
+						a.name, a.id, a.photo_url, a.kyced,
+						a.account_type, pe.status, pe.signatures,
+						pe.target_signatures, ewr.category,
+						p.created_at, r.reason
 			");
 
             $postsDataArray = json_decode(json_encode($postsData), true);
+
             $sortableAttributes = ['created_at', 'title', 'post_type'];
-            $filterableAttributes = ['status', 'category', 'post_type', 'author'];
+            $filterableAttributes = [
+                'status',
+                'category',
+                'post_type',
+                'author',
+            ];
 
             $total = $this->searchEngine->indexData(
                 indexName: 'posts',
