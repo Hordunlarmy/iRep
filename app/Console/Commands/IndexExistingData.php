@@ -111,7 +111,7 @@ class IndexExistingData extends Command
 				LEFT JOIN eye_witness_reports ewr ON p.id = ewr.post_id
 				LEFT JOIN accounts a ON p.creator_id = a.id
 				LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
-				GROUP BY p.id, p.title, p.context, p.post_type, p.media,
+				GROUP BY p.id, p.title, p.context, p.post_type, p.status, p.media,
 						a.name, a.id, a.photo_url, a.kyced,
 						a.account_type, pe.status, pe.signatures,
 						pe.target_signatures, ewr.category,
