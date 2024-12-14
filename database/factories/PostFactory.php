@@ -246,7 +246,7 @@ class PostFactory extends CommentFactory
     public function getBookmarkedPosts($accountId)
     {
         $query = "
-        SELECT
+        SELECT DISTINCT
             p.id,
             p.title,
             p.context,
