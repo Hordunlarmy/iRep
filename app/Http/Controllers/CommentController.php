@@ -95,13 +95,19 @@ class CommentController extends Controller
     public function report($id, Request $request)
     {
         try {
-            $reason = $request->input('reason');
+            $validated = $request->validate([
+                'reason' => 'required|string|exists:reports,reason',
+            ]);
 
-            $this->reportEntity('comment', $id, Auth::id(), $reason);
+            $this->findEntity('comment', $id);
+
+            $this->reportEntity('comment', $id, Auth::id(), $validated['reason']);
 
             return response()->json(['message' => 'success']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to report comment ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Failed to report comment ' . $e->getMessage(),
+            ], 500);
         }
     }
 

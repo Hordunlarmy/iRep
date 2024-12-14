@@ -243,6 +243,51 @@ class PostFactory extends CommentFactory
         return $query;
     }
 
+    public function getBookmarkedPosts($accountId)
+    {
+        $query = "
+        SELECT
+            p.id,
+            p.title,
+            p.context,
+            p.media,
+            p.post_type,
+            a.name AS author,
+            a.kyced AS author_kyced,
+            a.account_type AS author_account_type,
+            a.id AS author_id,
+            a.photo_url AS author_photo,
+            r.reason AS reported,
+            p.status AS post_status,
+            p.created_at,
+            CASE
+                WHEN p.post_type = 'petition' THEN JSON_OBJECT(
+                    'target_representative', rep.name,
+                    'signatures', pe.signatures,
+                    'target_signatures', pe.target_signatures,
+                    'status', pe.status
+                )
+                WHEN p.post_type = 'eyewitness' THEN JSON_OBJECT(
+                    'approvals', ew.approvals,
+                    'category', ew.category
+                )
+            END AS post_data
+        FROM bookmarks
+        JOIN posts p ON bookmarks.entity_id = p.id AND bookmarks.entity_type = 'post'
+        LEFT JOIN petitions pe ON p.id = pe.post_id
+        LEFT JOIN eye_witness_reports ew ON p.id = ew.post_id
+        LEFT JOIN accounts a ON p.creator_id = a.id
+        LEFT JOIN accounts rep ON pe.target_representative_id = rep.id
+        LEFT JOIN reports r ON r.entity_id = p.id AND r.entity_type = 'post'
+        WHERE bookmarks.account_id = ?
+    ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$accountId]);
+        $posts = $stmt->fetchAll(\PDO::FETCH_CLASS);
+
+        return $posts;
+    }
 
     public function hasUserSigned($postId, $accountId)
     {
@@ -286,6 +331,7 @@ class PostFactory extends CommentFactory
             $incrementStmt = $this->db->prepare($incrementQuery);
             $incrementStmt->execute([$postId]);
 
+
             if ($comment) {
                 $data = [
                     'postId' => $postId,
@@ -295,6 +341,7 @@ class PostFactory extends CommentFactory
                 $this->insertComment($data);
             }
 
+            $this->indexPost($postId);
             $this->db->commit();
         } catch (\PDOException $e) {
             $this->db->rollBack();
@@ -323,6 +370,7 @@ class PostFactory extends CommentFactory
             $incrementStmt = $this->db->prepare($incrementQuery);
             $incrementStmt->execute([$postId]);
 
+
             if ($comment) {
                 $data = [
                     'postId' => $postId,
@@ -336,6 +384,7 @@ class PostFactory extends CommentFactory
 
             $status = $this->checkAndUpdatePetitionStatus($postId);
 
+            $this->indexPost($postId);
             return $status;
         } catch (\PDOException $e) {
             $this->db->rollBack();

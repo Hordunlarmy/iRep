@@ -8,6 +8,7 @@ use App\Http\Requests\CommentRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PostResource;
 use App\Jobs\SendNotification;
+use App\Http\Resources\HomePageResource;
 
 class PostController extends Controller
 {
@@ -63,6 +64,25 @@ class PostController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch posts ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function getUserBookmarks()
+    {
+        try {
+            $result = $this->postFactory->getBookmarkedPosts(Auth::id());
+
+            return response()->json(
+                HomePageResource::collection($result)
+                    ->map(fn ($item) => $item->toPostArray())
+                    ->flatten(1),
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json(
+                ['error' => 'Failed to fetch bookmarks: ' . $e->getMessage()],
+                500
+            );
         }
     }
 
@@ -187,7 +207,10 @@ class PostController extends Controller
                 'reason' => 'required|string|exists:reports,reason',
             ]);
 
+            $this->findEntity('post', $id);
             $this->reportEntity('post', $id, Auth::id(), $validated['reason']);
+            $this->postFactory->indexPost($id);
+
 
             return response()->json(['message' => 'success']);
         } catch (\Exception $e) {
@@ -196,6 +219,7 @@ class PostController extends Controller
             ], 500);
         }
     }
+
     public function share($id)
     {
         Controller::findEntity('post', $id);
